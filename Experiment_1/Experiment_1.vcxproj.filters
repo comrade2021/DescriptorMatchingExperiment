@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="源文件\Test">
+      <UniqueIdentifier>{db63df3b-be6e-4cbb-bda5-1ee22e7c7f88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\feature">
+      <UniqueIdentifier>{a930449a-23ef-4f25-a785-4126cb49dd9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\main">
+      <UniqueIdentifier>{69164182-2b2b-4302-a605-b5d40cd7983f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\keypoint">
+      <UniqueIdentifier>{12c77831-5d5f-4c67-8672-7ea284c5a0c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\match">
+      <UniqueIdentifier>{4145ea02-def5-49be-9d12-e7c798e109ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\verification">
+      <UniqueIdentifier>{64e59261-3473-45fd-bc58-c0535570c01e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\experiment">
+      <UniqueIdentifier>{c5ac05e4-a465-4451-a22a-932e346d387d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="test_fpfh_omp.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix_transform.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_new_point.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件\main</Filter>
+    </ClCompile>
+    <ClCompile Include="keypoints_detector.cpp">
+      <Filter>源文件\keypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="my_normal_estimation.cpp">
+      <Filter>源文件\keypoint</Filter>
+    </ClCompile>
+    <ClCompile Include="toolbox.cpp">
+      <Filter>源文件\main</Filter>
+    </ClCompile>
+    <ClCompile Include="feature_match.cpp">
+      <Filter>源文件\match</Filter>
+    </ClCompile>
+    <ClCompile Include="test_transform.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="validator.cpp">
+      <Filter>源文件\verification</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="file_reader.cpp">
+      <Filter>源文件\experiment</Filter>
+    </ClCompile>
+    <ClCompile Include="experiment.cpp">
+      <Filter>源文件\experiment</Filter>
+    </ClCompile>
+    <ClCompile Include="feature_extractor.cpp">
+      <Filter>源文件\feature</Filter>
+    </ClCompile>
+    <ClCompile Include="test_histogram_kdtree.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="cfh.cpp">
+      <Filter>源文件\feature</Filter>
+    </ClCompile>
+    <ClCompile Include="cfh_rgb_rate_33.cpp">
+      <Filter>源文件\feature</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="keypoints_detector.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="my_normal_estimation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="toolbox.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="feature_match.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="validator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="file_reader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="experiment.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="feature_extractor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="my_point_types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_rate_33.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
