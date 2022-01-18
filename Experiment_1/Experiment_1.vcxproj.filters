@@ -90,6 +90,9 @@
     <ClCompile Include="cfh_rgb_dot.cpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
+    <ClCompile Include="cfh_rgb_fpfh_rate.cpp">
+      <Filter>源文件\feature</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="keypoints_detector.h">
@@ -126,6 +129,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="cfh_rgb_dot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_rate.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

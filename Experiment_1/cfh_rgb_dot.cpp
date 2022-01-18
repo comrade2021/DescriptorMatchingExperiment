@@ -3,7 +3,7 @@
 
 void CFH_Estimation_RGB_DOT::computeFeature(pcl::PointCloud<pcl::FPFHSignature33>& output)
 {
-    //resize output
+    // resize output
     output.resize(input_keypoints_->size());//为output分配空间，否则会出现向量下标越界
 
     /// nr_subdiv for RGB
@@ -16,13 +16,11 @@ void CFH_Estimation_RGB_DOT::computeFeature(pcl::PointCloud<pcl::FPFHSignature33
         pcl::Indices nn_indices;
         std::vector<float> nn_dists;
         searchForNeighbors(idx, search_radius_, nn_indices, nn_dists);
-
         //// Estimate the PFH signature(only RGB) at each patch
         computePointSignature(*input_cloud_, nn_indices, nr_subdiv_, cfh_histogram_);
 
         std::copy_n(cfh_histogram_.data(), cfh_histogram_.size(), output[idx].histogram);
     }
-
 }
 
 void CFH_Estimation_RGB_DOT::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) { input_cloud_ = input_cloud; }
