@@ -54,14 +54,22 @@ public:
 		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
 
 	/// <summary>
-	/// 计算纯色彩信息直方图(33维)
+	/// 计算纯色彩信息直方图(RGB pfhrgb-rate)
 	/// </summary>
 	/// <param name="cloud">输入点云</param>
 	/// <param name="keypoints">输入关键点</param>
 	/// <param name="normal">输入法线</param>
 	/// <param name="radius">特征计算半径</param>
 	/// <param name="feature">输出特征</param>
-	void computeCFH33(
+	void computeCFH_RGB_PFH_RATE(
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
+		pcl::PointCloud<pcl::Normal>::Ptr normal,
+		double radius,
+		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
+	
+	/// 计算色彩直方图（RGB pfh dot）
+	void computeCFH_RGB_PFH_DOT(
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
 		pcl::PointCloud<pcl::Normal>::Ptr normal,

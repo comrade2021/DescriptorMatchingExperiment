@@ -6,6 +6,7 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/common/point_tests.h>
 #include "cfh_rgb_rate_33.h"
+#include "cfh_rgb_dot.h"
  
 void FeatureExtractor::computePFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHSignature125>::Ptr feature)
 {
@@ -17,27 +18,6 @@ void FeatureExtractor::computePFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, 
 	es.setSearchMethod(tree);
 	es.setRadiusSearch(radius);
 	es.compute(*feature);
-
-	////计算色彩FPFH
-	//pcl::PFHRGBEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::PFHRGBSignature250> es_c;
-	//es_c.setInputCloud(keypoints);
-	//es_c.setSearchSurface(cloud);
-	//es_c.setInputNormals(normal);
-	//pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_c(new pcl::search::KdTree<pcl::PointXYZRGB>());
-	//es_c.setSearchMethod(tree_c);
-	//es_c.setRadiusSearch(radius);
-	//pcl::PointCloud<pcl::PFHRGBSignature250>::Ptr color_fpfh(new pcl::PointCloud<pcl::PFHRGBSignature250>);
-	//es_c.compute(*color_fpfh);
-	//// Resize the output dataset
-	//if (feature->size() != color_fpfh->size())
-	//	feature->resize(color_fpfh->size());
-	//for (size_t i = 0; i < feature->size(); i++)
-	//{
-	//	for (size_t k = 0; k < 125; k++)
-	//	{
-	//		feature->points[i].histogram[k] = color_fpfh->points[i].histogram[125+k];
-	//	}
-	//}
 }
 
 void FeatureExtractor::computePFHRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHRGBSignature250>::Ptr feature)
@@ -65,9 +45,19 @@ void FeatureExtractor::computeFPFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 	es.compute(*feature);
 }
 
-void FeatureExtractor::computeCFH33(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
+void FeatureExtractor::computeCFH_RGB_PFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
 {
 	CFH_Estimation_RGB_RATE_33 ce;
+	ce.setInputCloud(cloud);
+	ce.setInputKeypoints(keypoints);
+	ce.setInputNormal(normal);
+	ce.setSearchRadius(radius);
+	ce.computeFeature(*feature);
+}
+
+void FeatureExtractor::computeCFH_RGB_PFH_DOT(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
+{
+	CFH_Estimation_RGB_DOT ce;
 	ce.setInputCloud(cloud);
 	ce.setInputKeypoints(keypoints);
 	ce.setInputNormal(normal);

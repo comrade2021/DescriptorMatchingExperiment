@@ -35,10 +35,17 @@ public:
 	int matches_sum_fpfh_[20] = {0};
 	int corresponding_regions_sum_fpfh_[20] = {0};
 	
-	int correct_matches_sum_cfh33_[20] = {0};
-	int matches_sum_cfh33_[20] = {0};
-	int corresponding_regions_sum_cfh33_[20] = {0};
+	// -------------------for color---------------------- //
+	int correct_matches_sum_cfh_rgb_pfh_rate_[20] = {0};
+	int matches_sum_cfh_rgb_pfh_rate_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_pfh_rate_[20] = {0};
 	
+	int correct_matches_sum_cfh_rgb_pfh_dot_[20] = {0};
+	int matches_sum_cfh_rgb_pfh_dot_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_pfh_dot_[20] = {0};
+
+	// -------------------------------------------------- //
+
 	int correct_matches_sum_fpfh_rgb_[20] = {0};
 	int matches_sum_fpfh_rgb_[20] = {0};
 	int corresponding_regions_sum_fpfh_rgb_[20] = {0};

@@ -84,7 +84,7 @@ VTK_MODULE_INIT(vtkRenderingFreeType);
 VTK_MODULE_INIT(vtkRenderingContextOpenGL2);
 
 //正在测试的描述符数量
-#define NUM_OF_DESCRIPTOR_TESTED 3
+#define NUM_OF_DESCRIPTOR_TESTED 2
 //正在测试的场景数量
 #define NUM_OF_SCNEN 12
 //匹配阈值分组数量
@@ -102,9 +102,22 @@ main() {
 	ToolBox tb;
 	std::vector<double> sum_precision(NUM_ALPHA * NUM_OF_DESCRIPTOR_TESTED);
 	std::vector<double> sum_recall(NUM_ALPHA * NUM_OF_DESCRIPTOR_TESTED);
-	//std::vector<std::string> features_name = {"PFH","FPFH","FPFH-RGB","PFHRGB","SHOT","CSHOT"};
-	//std::vector<std::string> features_name = {"PFH"};
-	std::vector<std::string> features_name = { "FPFH","CFH33","FPFH-RGB-66" };
+
+	std::vector<std::string> features_name = { "CFH_RGB_PFH_RATE","CFH_RGB_PFH_DOT"};
+	//std::vector<std::string> features_name = {"CFH_RGB_PFH_DOT"};
+	/*
+	测试新的特征时，注意：
+
+	1. main的fatures_name对应于experiment::perform的features_name，须手动设置为与experiment中当前实验安排一致；
+	
+	2. 手动设置 NUM_OF_DESCRIPTOR_TESTED
+
+	3. 手动设置NUM_ALPHA，须与Experiment::computeALLPR_2::alpha_devide一致
+
+	4. experiment.h、main()、experiment.cpp 的 matches_sum_cfh_rgb_pfh_rate_等内容，须一致
+
+	5. 由于feature_extractor中的match等方法参数已有重载，因此对于新特征，只需要写一个计算方法就行。
+	*/
 
 	std::vector<double> precision;
 	std::vector<double> recall;
@@ -231,7 +244,7 @@ main() {
 	std::vector<double> vector_r;
 	double p = 0;
 	double r = 0;
-	////pfh-pr
+	////pfh-pr   ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
 	//	if (exp.matches_sum_pfh_[i] == 0)
@@ -247,55 +260,72 @@ main() {
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
-	//fpfh-pr
+	////fpfh-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_[i]) / exp.matches_sum_fpfh_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_[i]) / exp.corresponding_regions_sum_fpfh_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+	//CFH_RGB_PFH_RATE  ! 如果不是正在测试的特征，请将此处注释
 	for (size_t i = 0; i < 20; i++)
 	{
-		if (exp.matches_sum_fpfh_[i] == 0)
+		if (exp.matches_sum_cfh_rgb_pfh_rate_[i] == 0)
 		{
 			p = 1;
 			r = 0;
 		}
 		else
 		{
-			p = static_cast<double>(exp.correct_matches_sum_fpfh_[i]) / exp.matches_sum_fpfh_[i];
-			r = static_cast<double>(exp.correct_matches_sum_fpfh_[i]) / exp.corresponding_regions_sum_fpfh_[i];
+			p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_pfh_rate_[i]) / exp.matches_sum_cfh_rgb_pfh_rate_[i];
+			r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_pfh_rate_[i]) / exp.corresponding_regions_sum_cfh_rgb_pfh_rate_[i];
 		}
 		vector_p.push_back(p);
 		vector_r.push_back(r);
 	}
-	//cfh33-pr
+	
+	//CFH_RGB_PFH_DOT  ! 如果不是正在测试的特征，请将此处注释
 	for (size_t i = 0; i < 20; i++)
 	{
-		if (exp.matches_sum_cfh33_[i] == 0)
+		if (exp.matches_sum_cfh_rgb_pfh_dot_[i] == 0)
 		{
 			p = 1;
 			r = 0;
 		}
 		else
 		{
-			p = static_cast<double>(exp.correct_matches_sum_cfh33_[i]) / exp.matches_sum_cfh33_[i];
-			r = static_cast<double>(exp.correct_matches_sum_cfh33_[i]) / exp.corresponding_regions_sum_cfh33_[i];
+			p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_pfh_dot_[i]) / exp.matches_sum_cfh_rgb_pfh_dot_[i];
+			r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_pfh_dot_[i]) / exp.corresponding_regions_sum_cfh_rgb_pfh_dot_[i];
 		}
 		vector_p.push_back(p);
 		vector_r.push_back(r);
 	}
-	//fpfh-rgb-pr
-	for (size_t i = 0; i < 20; i++)
-	{
-		if (exp.matches_sum_fpfh_rgb_[i] == 0)
-		{
-			p = 1;
-			r = 0;
-		}
-		else
-		{
-			p = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.matches_sum_fpfh_rgb_[i];
-			r = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.corresponding_regions_sum_fpfh_rgb_[i];
-		}
-		vector_p.push_back(p);
-		vector_r.push_back(r);
-	}
-	////pfhrgb-pr
+	////fpfh-rgb-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_rgb_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.matches_sum_fpfh_rgb_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.corresponding_regions_sum_fpfh_rgb_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+	////pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
 	//	if (exp.matches_sum_pfhrgb_[i]==0)
@@ -311,7 +341,7 @@ main() {
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
-	////shot-pr
+	////shot-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
 	//	if (exp.matches_sum_shot_[i] == 0)
@@ -327,7 +357,7 @@ main() {
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
-	////cshot-pr
+	////cshot-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
 	//	if (exp.matches_sum_cshot_[i] == 0)

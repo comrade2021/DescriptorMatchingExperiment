@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="cfh.cpp" />
+    <ClCompile Include="cfh_rgb_dot.cpp" />
     <ClCompile Include="cfh_rgb_rate_33.cpp" />
     <ClCompile Include="experiment.cpp" />
     <ClCompile Include="feature_extractor.cpp" />
@@ -166,6 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cfh.h" />
+    <ClInclude Include="cfh_rgb_dot.h" />
     <ClInclude Include="cfh_rgb_rate_33.h" />
     <ClInclude Include="experiment.h" />
     <ClInclude Include="feature_extractor.h" />
