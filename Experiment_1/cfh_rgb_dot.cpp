@@ -28,8 +28,6 @@ void CFH_Estimation_RGB_DOT::setInputNormal(pcl::PointCloud<pcl::Normal>::Ptr in
 void CFH_Estimation_RGB_DOT::setInputKeypoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_keypoints) { input_keypoints_ = input_keypoints; }
 void CFH_Estimation_RGB_DOT::setSearchRadius(double search_radius) { search_radius_ = search_radius; }
 
-
-//此处有错，输出indices不为空，但数值都是0
 void CFH_Estimation_RGB_DOT::searchForNeighbors(std::size_t index, double radius, pcl::Indices& indices, std::vector<float>& distances)
 {
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
@@ -97,7 +95,7 @@ void CFH_Estimation_RGB_DOT::computePointSignature(pcl::PointCloud<pcl::PointXYZ
 
 bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXYZRGB>& cloud, int p_idx, int q_idx, float& f1)
 {
-    float r1 = cloud[p_idx].r / static_cast<float>(255) - 0.5;
+    /*float r1 = cloud[p_idx].r / static_cast<float>(255) - 0.5;
     float g1 = cloud[p_idx].g / static_cast<float>(255) - 0.5;
     float b1 = cloud[p_idx].b / static_cast<float>(255) - 0.5;
     float r2 = cloud[q_idx].r / static_cast<float>(255) - 0.5;
@@ -105,7 +103,15 @@ bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXY
     float b2 = cloud[q_idx].b / static_cast<float>(255) - 0.5;
     Eigen::Vector4f colors1(r1,g1,b1,0), colors2(r2,g2,b2,0);
     colors1.normalize();
-    colors2.normalize();
+    colors2.normalize();*/
+
+    float r1 = cloud[p_idx].r / static_cast<float>(255);
+    float g1 = cloud[p_idx].g / static_cast<float>(255);
+    float b1 = cloud[p_idx].b / static_cast<float>(255);
+    float r2 = cloud[q_idx].r / static_cast<float>(255);
+    float g2 = cloud[q_idx].g / static_cast<float>(255);
+    float b2 = cloud[q_idx].b / static_cast<float>(255);
+    Eigen::Vector4f colors1(r1,g1,b1,0), colors2(r2,g2,b2,0);
 
     computeRGBPairFeatures(colors1, colors2, f1);
     return (true);
@@ -114,6 +120,8 @@ bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXY
 bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
 {
     
-    f1 = colors1.dot(colors2);
+
+
+    //f1 = colors1.dot(colors2);
     return (true);
 }

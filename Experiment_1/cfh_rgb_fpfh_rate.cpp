@@ -14,13 +14,9 @@ void CFH_Estimation_RGB_FPFH_RATE::computeFeature(pcl::PointCloud<pcl::FPFHSigna
 	// Save a few cycles by not checking every point for NaN/Inf values if the cloud is set to dense
 	if (input_cloud_->is_dense)
 	{
-        std::cout << "----------### 1" << std::endl;
-
 		// Iterate over the entire index vector
 		for (std::size_t idx = 0; idx < input_keypoints_->size(); ++idx)
 		{
-            std::cout << "----------### 1 -----"<<idx << std::endl;
-
 			pcl::Indices nn_indices;
 			std::vector<float> nn_dists;
 			if (searchForNeighbors(idx, search_radius_, nn_indices, nn_dists) == 0)
@@ -39,19 +35,13 @@ void CFH_Estimation_RGB_FPFH_RATE::computeFeature(pcl::PointCloud<pcl::FPFHSigna
 
 			// Compute the FPFH signature (i.e. compute a weighted combination of local SPFH signatures) ...
 			weightPointSPFHSignature(hist_f1_, hist_f2_, hist_f3_, nn_indices, nn_dists, fpfh_histogram_);
-            std::cout << "----------### 1  weightPointSPFHSignature " << std::endl;
 
 			// ...and copy it into the output cloud
 			std::copy_n(fpfh_histogram_.data(), fpfh_histogram_.size(), output[idx].histogram);
-            std::cout << "----------### 1  copy_n " << std::endl;
-
 		}
-        std::cout << "----------### 1 end" << std::endl;
-
 	}
 	else
 	{
-        std::cout << "----------### 2" << std::endl;
 		// Iterate over the entire index vector
 		for (std::size_t idx = 0; idx < input_keypoints_->size(); ++idx)
 		{
@@ -60,6 +50,7 @@ void CFH_Estimation_RGB_FPFH_RATE::computeFeature(pcl::PointCloud<pcl::FPFHSigna
 			if (!pcl::isFinite((*input_keypoints_)[idx]) ||
 				searchForNeighbors(idx, search_radius_, nn_indices, nn_dists) == 0)
 			{
+                std::cout << "#2search_radius_: " << search_radius_ << std::endl;
 				for (Eigen::Index d = 0; d < fpfh_histogram_.size(); ++d)
 					output[idx].histogram[d] = std::numeric_limits<float>::quiet_NaN();
 
@@ -89,12 +80,24 @@ void CFH_Estimation_RGB_FPFH_RATE::setSearchRadius(double search_radius) { searc
 
 int CFH_Estimation_RGB_FPFH_RATE::searchForNeighbors(std::size_t index, double radius, pcl::Indices& indices, std::vector<float>& distances)
 {
+	//1.原FPFH特征近邻搜索
+	pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree_1;
+	kdtree_1.setInputCloud(input_cloud_);
+	std::vector<int> indices_1;
+	std::vector<float> sqr_distances_1;
+	int found_neighs = kdtree_1.radiusSearch((*input_keypoints_)[index], radius, indices_1, sqr_distances_1);
+	//std::cout << "#1:found_neighs: "<< found_neighs << std::endl;
+	//std::cout <<"#1  radius: "<< radius << std::endl;
+	
+
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(input_cloud_);
     // Neighbors within radius search
     std::vector<int> pointIdxRadiusSearch;
     std::vector<float> pointRadiusSquaredDistance;
     int re = kdtree.radiusSearch((*input_keypoints_)[index], radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+    //std::cout << "#2: " << re << std::endl;
+
     if (re>0)
     {
         indices.resize(pointIdxRadiusSearch.size());//清空
@@ -147,11 +150,11 @@ bool CFH_Estimation_RGB_FPFH_RATE::computePairFeatures(const pcl::PointCloud<pcl
     Eigen::Vector4i colors1(cloud[p_idx].r, cloud[p_idx].g, cloud[p_idx].b, 0),
         colors2(cloud[q_idx].r, cloud[q_idx].g, cloud[q_idx].b, 0);
     //f4
-    Eigen::Vector4f dp2p1 = cloud[q_idx].getVector4fMap() - cloud[p_idx].getVector4fMap();
+    /*Eigen::Vector4f dp2p1 = cloud[q_idx].getVector4fMap() - cloud[p_idx].getVector4fMap();
     dp2p1[3] = 0.0f;
-    float distence = dp2p1.norm();
+    float distence = dp2p1.norm();*/
 
-    computePairFeatures(colors1, colors2, f1, f2, f3, distence);
+    computePairFeatures(colors1, colors2, f1, f2, f3, f4);
     return (true);
 }
 
@@ -162,6 +165,7 @@ bool CFH_Estimation_RGB_FPFH_RATE::computePairFeatures(const Eigen::Vector4i& co
     f1 = (colors2[0] != 0) ? static_cast<float> (colors1[0]) / colors2[0] : 1.0f;
     f2 = (colors2[1] != 0) ? static_cast<float> (colors1[1]) / colors2[1] : 1.0f;
     f3 = (colors2[2] != 0) ? static_cast<float> (colors1[2]) / colors2[2] : 1.0f;
+    f4 = 0.0f;
 
     // make sure the ratios are in the [-1, 1] interval
     if (f1 > 1.0f) f1 = -1.0f / f1;
@@ -295,10 +299,17 @@ void CFH_Estimation_RGB_FPFH_RATE::computeSPFHSignatures(std::vector<int>& spfh_
         {
             pcl::Indices nn_indices;
             std::vector<float> nn_dists;
+            /*std::cout << "#search_radius_: " << search_radius_ << std::endl;
+            std::cout << "#searchForNeighbors: " << searchForNeighbors(p_idx, search_radius_, nn_indices, nn_dists) << std::endl;
+            std::cout << "#nn_indices: " << nn_indices.size()<< std::endl;
+            std::cout << "#nn_dists: " << nn_dists.size() << std::endl;*/
+
             if (searchForNeighbors(p_idx, search_radius_, nn_indices, nn_dists) == 0)
                 continue;
 
             spfh_indices.insert(nn_indices.begin(), nn_indices.end());
+            //std::cout << "#spfh_indices: " << spfh_indices.size() << std::endl;
+
         }
     }
     else
@@ -307,6 +318,7 @@ void CFH_Estimation_RGB_FPFH_RATE::computeSPFHSignatures(std::vector<int>& spfh_
         for (std::size_t idx = 0; idx < input_keypoints_->size(); ++idx)
             spfh_indices.insert(static_cast<int> (idx));
     }
+    std::cout << "#spfh_indices: " << spfh_indices.size() << std::endl;
 
     // Initialize the arrays that will store the SPFH signatures
     std::size_t data_size = spfh_indices.size();
@@ -326,11 +338,8 @@ void CFH_Estimation_RGB_FPFH_RATE::computeSPFHSignatures(std::vector<int>& spfh_
 
         // Estimate the SPFH signature around p_idx
         computePointSPFHSignature(*surface_, *input_normals_, p_idx, i, nn_indices, hist_f1, hist_f2, hist_f3);
-        std::cout << i << std::endl;
         // Populate a lookup table for converting a point index to its corresponding row in the spfh_hist_* matrices
         spfh_hist_lookup[p_idx] = i;
         i++;
     }
-    std::cout << "----------end computeSPFHSignatures" << std::endl;
-
 }

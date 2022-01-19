@@ -68,8 +68,16 @@ public:
 		double radius,
 		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
 	
-	/// 计算色彩直方图（RGB pfh dot）
+	/// 计算色彩直方图（RGB pfh结构 dot）
 	void computeCFH_RGB_PFH_DOT(
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
+		pcl::PointCloud<pcl::Normal>::Ptr normal,
+		double radius,
+		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
+
+	/// 计算色彩直方图（RGB fpfh结构 dot）
+	void computeCFH_RGB_FPFH_RATE(
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
 		pcl::PointCloud<pcl::Normal>::Ptr normal,

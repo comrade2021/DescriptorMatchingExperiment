@@ -43,6 +43,14 @@ public:
 	int correct_matches_sum_cfh_rgb_pfh_dot_[20] = {0};
 	int matches_sum_cfh_rgb_pfh_dot_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_pfh_dot_[20] = {0};
+	
+	int correct_matches_sum_cfh_rgb_fpfh_rate_[20] = {0};
+	int matches_sum_cfh_rgb_fpfh_rate_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_fpfh_rate_[20] = {0};
+	
+	int correct_matches_sum_cfh_rgb_fpfh_dot_[20] = {0};
+	int matches_sum_cfh_rgb_fpfh_dot_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_fpfh_dot_[20] = {0};
 
 	// -------------------------------------------------- //
 

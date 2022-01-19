@@ -14,8 +14,10 @@
 
 //#define PFH
 //#define FPFH
-#define CFH_RGB_PFH_RATE
+//#define CFH_RGB_PFH_RATE
 #define CFH_RGB_PFH_DOT
+//#define CFH_RGB_FPFH_RATE
+
 //#define FPFH_RGB_ORI
 //#define PFHRGB
 //#define SHOT
@@ -115,9 +117,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	std::cout << "========================================= Calculate the PR value once =========================================" << std::endl;
 	std::cout << "model:2   scene:1 " << std::endl;
 	//参数
-	int num_key_m_1 = 1000;//关键点数量
-	int num_key_m_2 = 1000;
-	int num_key_s = 1;
+	int num_key_m_1 = 10;//关键点数量
+	int num_key_m_2 = 10;
+	int num_key_s = 30;
 	double mr_s = 0;//网格分辨率
 	double mr_1 = 0;
 	double mr_2 = 0;
@@ -185,9 +187,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	normal_radius_s = 4 * mr_s;//法线的计算半径
 	normal_radius_m_1 = 4 * mr_1;
 	normal_radius_m_2 = 4 * mr_1;
-	radius_feature_m_1 = 15 * mr_s;//特征的计算半径
-	radius_feature_m_2 = 15 * mr_s;
-	radius_feature_s = 15 * mr_s;
+	radius_feature_m_1 = 15 * mr_s/2;//特征的计算半径
+	radius_feature_m_2 = 15 * mr_s/2;
+	radius_feature_s = 15 * mr_s/2;
 	beta_threshold = 10 * res_scene;//距离阈值
 	std::cout << "--------------------- Initialize Parameters ----------------------" << std::endl;
 	std::cout << "normal_radius_s = 4 * mr_s: " << normal_radius_s << std::endl;
@@ -239,8 +241,8 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	int noi = ((keypoints_s->size()) / 2);
 	key_detector.addNoisePoints(cloud_scene, keypoints_s, noi);//!注意：虽然真实对应数量在变化，但几种描述子在一次场景实验中使用的关键点是完全相同的，结果依然是公平的。
 	std::cout << "----------------------- Sampling Keypoints Test -----------------------" << std::endl;
-	std::cout << "keypoints_m_1 size: " << keypoints_m_1->size() << std::endl;
-	std::cout << "keypoints_m_2 size: " << keypoints_m_2->size() << std::endl;
+	std::cout << "keypoints_m_1 size: " << keypoints_m_1->size() << std::endl;//2800
+	std::cout << "keypoints_m_2 size: " << keypoints_m_2->size() << std::endl;//1200
 	std::cout << "keypoints_m size: " << keypoints_m->size() << std::endl;
 	//std::cout << "corr_regions/noise in keypoints_s : " <<keypoints_s->size()- noi <<"/" << noi << std::endl;
 	std::cout << "keypoints_s size: " << keypoints_s->size() << std::endl;
@@ -571,6 +573,81 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		std::cout << std::endl << std::endl << std::endl << std::endl;
 	}
 #endif // CFH_RGB_PFH_DOT
+
+#ifdef CFH_RGB_FPFH_RATE
+	//5.计算特征的PR曲线（cfh_rgb_fpfh_rate）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh002_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh002_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh002_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh002;
+	ex_cfh002.computeCFH_RGB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh002_m_1);
+	ex_cfh002.computeCFH_RGB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh002_m_2);
+	ex_cfh002.computeCFH_RGB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh002_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh002_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh002_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh002_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh002_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh002_m += *cfh002_m_1;
+	*cfh002_m += *cfh002_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_RGB_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh002_m, cfh002_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_rgb_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_cfh_rgb_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_rgb_pfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_rgb_fpfh_rate_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_cfh_rgb_fpfh_rate_[i]:   " << matches_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_rate_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- CFH_RGB_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_RGB_FPFH_RATE
 
 #ifdef FPFH_RGB_ORI
 	//5.1.计算特征的PR曲线（形状融合色彩,fpfh+pfhrgb）
