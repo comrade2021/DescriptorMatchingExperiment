@@ -46,6 +46,10 @@ namespace pcl
             computePairFeatures(const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
                 int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4);
 
+        /*计算两点各色彩通道的比值，代替原来的pcl::pcl::computePairFeatures */
+        bool
+            computeRGBPairFeatures(const Eigen::Vector4i& colors1, const Eigen::Vector4i& colors2, float& f1, float& f2, float& f3, float& f4);
+
         /** \brief Estimate the SPFH (Simple Point Feature Histograms) individual signatures of the three angular
           * (f1, f2, f3) features for a given point based on its spatial neighborhood of 3D points with normals
           * \param[in] cloud the dataset containing the XYZ Cartesian coordinates of the two points

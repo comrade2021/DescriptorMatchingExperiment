@@ -30,8 +30,6 @@ void CFH_Estimation_RGB_RATE_33::setInputNormal(pcl::PointCloud<pcl::Normal>::Pt
 void CFH_Estimation_RGB_RATE_33::setInputKeypoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_keypoints) { input_keypoints_ = input_keypoints; }
 void CFH_Estimation_RGB_RATE_33::setSearchRadius(double search_radius) { search_radius_ = search_radius; }
 
-
-//此处有错，输出indices不为空，但数值都是0
 void CFH_Estimation_RGB_RATE_33::searchForNeighbors(std::size_t index, double radius, pcl::Indices& indices, std::vector<float>& distances)
 {
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;

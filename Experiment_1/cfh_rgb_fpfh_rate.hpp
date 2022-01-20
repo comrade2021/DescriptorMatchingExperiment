@@ -13,9 +13,28 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePairFeat
     const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
     int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4)
 {
-    pcl::computePairFeatures(cloud[p_idx].getVector4fMap(), normals[p_idx].getNormalVector4fMap(),
-        cloud[q_idx].getVector4fMap(), normals[q_idx].getNormalVector4fMap(),
-        f1, f2, f3, f4);
+    Eigen::Vector4i colors1(cloud[p_idx].r, cloud[p_idx].g, cloud[p_idx].b, 0),
+        colors2(cloud[q_idx].r, cloud[q_idx].g, cloud[q_idx].b, 0);
+    computeRGBPairFeatures(colors1, colors2, f1, f2, f3,f4);
+    return (true);
+}
+
+template<typename PointInT, typename PointNT, typename PointOutT>
+inline bool pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4i& colors1, const Eigen::Vector4i& colors2, float& f1, float& f2, float& f3, float& f4)
+{
+    // everything before was standard 4D-Darboux frame feature pair
+    // now, for the experimental color stuff
+    f1 = (colors2[0] != 0) ? static_cast<float> (colors1[0]) / colors2[0] : 1.0f;
+    f2 = (colors2[1] != 0) ? static_cast<float> (colors1[1]) / colors2[1] : 1.0f;
+    f3 = (colors2[2] != 0) ? static_cast<float> (colors1[2]) / colors2[2] : 1.0f;
+
+    // make sure the ratios are in the [-1, 1] interval
+    if (f1 > 1.0f) f1 = -1.0f / f1;
+    if (f2 > 1.0f) f2 = -1.0f / f2;
+    if (f3 > 1.0f) f3 = -1.0f / f3;
+
+    f4 = 0.0;
+
     return (true);
 }
 

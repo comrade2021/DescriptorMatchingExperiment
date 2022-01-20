@@ -15,8 +15,8 @@
 //#define PFH
 //#define FPFH
 //#define CFH_RGB_PFH_RATE
-#define CFH_RGB_PFH_DOT
-//#define CFH_RGB_FPFH_RATE
+//#define CFH_RGB_PFH_DOT
+#define CFH_RGB_FPFH_RATE
 
 //#define FPFH_RGB_ORI
 //#define PFHRGB
@@ -187,9 +187,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	normal_radius_s = 4 * mr_s;//法线的计算半径
 	normal_radius_m_1 = 4 * mr_1;
 	normal_radius_m_2 = 4 * mr_1;
-	radius_feature_m_1 = 15 * mr_s/2;//特征的计算半径
-	radius_feature_m_2 = 15 * mr_s/2;
-	radius_feature_s = 15 * mr_s/2;
+	radius_feature_m_1 = 15 * mr_s;//特征的计算半径
+	radius_feature_m_2 = 15 * mr_s;
+	radius_feature_s = 15 * mr_s;
 	beta_threshold = 10 * res_scene;//距离阈值
 	std::cout << "--------------------- Initialize Parameters ----------------------" << std::endl;
 	std::cout << "normal_radius_s = 4 * mr_s: " << normal_radius_s << std::endl;
@@ -630,7 +630,7 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		recall.push_back(r);
 		correct_matches_sum_cfh_rgb_fpfh_rate_[i] += correct_matches->size();
 		matches_sum_cfh_rgb_fpfh_rate_[i] += corrs_match->size();
-		corresponding_regions_sum_cfh_rgb_pfh_dot_[i] += all_correspondences->size();
+		corresponding_regions_sum_cfh_rgb_fpfh_rate_[i] += all_correspondences->size();
 		std::cout << "correct_matches_sum_cfh_rgb_fpfh_rate_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
 		std::cout << "matches_sum_cfh_rgb_fpfh_rate_[i]:   " << matches_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
 		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_rate_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_rate_[i] << std::endl;
