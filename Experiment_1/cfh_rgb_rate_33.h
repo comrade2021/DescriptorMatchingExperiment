@@ -33,7 +33,7 @@ public:
     /// <param name="nr_split">每个特征的细分区间数量，等于nr_subdiv_</param>
     /// <param name="pfhrgb_histogram">输出的特征直方图</param>
     void computePointPFHRGBSignature(pcl::PointCloud<pcl::PointXYZRGB>& cloud, pcl::Indices& indices, int nr_split, Eigen::VectorXf& pfhrgb_histogram);
-
+    
     /// <summary>
     /// 计算两点之间的RGB特征，即RGB分量之间的比值。输入参数是点云及点对的索引。
     /// </summary>

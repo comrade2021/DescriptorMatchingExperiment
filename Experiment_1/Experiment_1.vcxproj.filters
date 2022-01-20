@@ -90,7 +90,7 @@
     <ClCompile Include="cfh_rgb_dot.cpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
-    <ClCompile Include="cfh_rgb_fpfh_rate.cpp">
+    <ClCompile Include="cfh_rgb_fpfh_rate.hpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
   </ItemGroup>

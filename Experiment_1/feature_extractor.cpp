@@ -66,16 +66,16 @@ void FeatureExtractor::computeCFH_RGB_PFH_DOT(pcl::PointCloud<pcl::PointXYZRGB>:
 	ce.computeFeature(*feature);
 }
 
-void FeatureExtractor::computeCFH_RGB_FPFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
-{
-	CFH_Estimation_RGB_FPFH_RATE ce;
-	ce.setInputCloud(cloud);
-	ce.setInputKeypoints(keypoints);
-	ce.setInputNormal(normal);
-	ce.setSearchRadius(radius);
-	ce.setSurface(cloud);
-	ce.computeFeature(*feature);
-}
+//void FeatureExtractor::computeCFH_RGB_FPFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
+//{
+//	CFH_Estimation_RGB_FPFH_RATE ce;
+//	ce.setInputCloud(cloud);
+//	ce.setInputKeypoints(keypoints);
+//	ce.setInputNormal(normal);
+//	ce.setSearchRadius(radius);
+//	ce.setSurface(cloud);
+//	ce.computeFeature(*feature);
+//}
 
 void FeatureExtractor::compute_FPFH_AND_PFHRGB(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHSignature125>::Ptr feature)
 {
