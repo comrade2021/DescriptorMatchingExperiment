@@ -170,6 +170,8 @@
     <ClInclude Include="cfh.h" />
     <ClInclude Include="cfh_rgb.h" />
     <ClInclude Include="cfh_rgb_dot.h" />
+    <ClInclude Include="cfh_rgb_fpfh_dot.h" />
+    <ClInclude Include="cfh_rgb_fpfh_dot.hpp" />
     <ClInclude Include="cfh_rgb_fpfh_rate.h" />
     <ClInclude Include="cfh_rgb_rate_33.h" />
     <ClInclude Include="experiment.h" />

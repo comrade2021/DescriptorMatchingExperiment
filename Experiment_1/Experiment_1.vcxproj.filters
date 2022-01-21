@@ -137,5 +137,11 @@
     <ClInclude Include="cfh_rgb_fpfh_rate.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_dot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_dot.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
