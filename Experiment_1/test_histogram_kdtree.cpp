@@ -8,6 +8,9 @@
 //#include "my_point_types.h"
 //#include <pcl/features/pfh.h>
 //#include <pcl/features/pfhrgb.h>
+// #ifndef NumberOfThreads
+// #define NumberOfThreads 2
+// #endif // !NumberOfThreads
 //
 ////近邻搜索的中心点
 //#define PN 100
@@ -20,7 +23,7 @@
 //	pcl::io::loadPLYFile("./dataset3/3D models/CVLab/2009-10-27/model1.ply", *cloud);
 //
 //	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
-//	ne.setNumberOfThreads(4);
+//	ne.setNumberOfThreads(NumberOfThreads);
 //	ne.setInputCloud(cloud);
 //	ne.setRadiusSearch(0.01);
 //	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_ne(new pcl::search::KdTree<pcl::PointXYZRGB>());

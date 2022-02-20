@@ -5,9 +5,13 @@
 #include <pcl/features/pfhrgb.h>
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl/common/point_tests.h>
-#include "cfh_rgb_rate_33.h"
-#include "cfh_rgb_dot.h"
+#include "cfh_rgb_pfh_rate.h"
+#include "cfh_rgb_pfh_dot.h"
 #include "cfh_rgb_fpfh_rate.hpp"
+
+#ifndef NumberOfThreads
+#define NumberOfThreads 2
+#endif // !NumberOfThreads
  
 void FeatureExtractor::computePFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHSignature125>::Ptr feature)
 {
@@ -42,13 +46,13 @@ void FeatureExtractor::computeFPFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
 	es.setSearchMethod(tree);
 	es.setRadiusSearch(radius);
-	es.setNumberOfThreads(4);
+	es.setNumberOfThreads(NumberOfThreads);
 	es.compute(*feature);
 }
 
 void FeatureExtractor::computeCFH_RGB_PFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
 {
-	CFH_Estimation_RGB_RATE_33 ce;
+	CFH_Estimation_RGB_PFH_RATE ce;
 	ce.setInputCloud(cloud);
 	ce.setInputKeypoints(keypoints);
 	ce.setInputNormal(normal);
@@ -58,7 +62,7 @@ void FeatureExtractor::computeCFH_RGB_PFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>
 
 void FeatureExtractor::computeCFH_RGB_PFH_DOT(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
 {
-	CFH_Estimation_RGB_DOT ce;
+	CFH_Estimation_RGB_PFH_DOT ce;
 	ce.setInputCloud(cloud);
 	ce.setInputKeypoints(keypoints);
 	ce.setInputNormal(normal);
@@ -88,11 +92,11 @@ void FeatureExtractor::compute_FPFH_AND_PFHRGB(pcl::PointCloud<pcl::PointXYZRGB>
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_1(new pcl::search::KdTree<pcl::PointXYZRGB>());
 	es_s.setSearchMethod(tree_1);
 	es_s.setRadiusSearch(radius);
-	es_s.setNumberOfThreads(4);
+	es_s.setNumberOfThreads(NumberOfThreads);
 	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_33(new pcl::PointCloud<pcl::FPFHSignature33>);
 	es_s.compute(*fpfh_33);
 	//计算RGB
-	CFH_Estimation_RGB_RATE_33 ce;
+	CFH_Estimation_RGB_PFH_RATE ce;
 	ce.setInputCloud(cloud);
 	ce.setInputKeypoints(keypoints);
 	ce.setInputNormal(normal);
@@ -127,7 +131,7 @@ void FeatureExtractor::computeSHOT(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 	es.setInputNormals(normal);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
 	es.setSearchMethod(tree);
-	es.setNumberOfThreads(4);
+	es.setNumberOfThreads(NumberOfThreads);
 	es.setRadiusSearch(radius);
 	/*note: 此处可以不使用es.setLRFRadius，因为当未设置LRF半径时，会自动将其设置为radiusSearch的搜索半径。
 	pcl库中的源码：lrf_estimator->setRadiusSearch((lrf_radius_ > 0 ? lrf_radius_ : search_radius_));*/
@@ -142,7 +146,7 @@ void FeatureExtractor::computeCSHOT(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud
 	es.setInputNormals(normal);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());
 	es.setSearchMethod(tree);
-	es.setNumberOfThreads(4);
+	es.setNumberOfThreads(NumberOfThreads);
 	es.setRadiusSearch(radius);
 	es.compute(*feature);
 }

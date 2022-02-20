@@ -11,6 +11,10 @@
 //#include <pcl/io/pcd_io.h>
 //#include <pcl/features/normal_3d.h>
 //#include <pcl/kdtree/kdtree_flann.h>
+// 
+// #ifndef NumberOfThreads
+// #define NumberOfThreads 2
+// #endif // !NumberOfThreads
 //
 //int main(int argc, char** argv)
 //{
@@ -34,7 +38,7 @@
 //	// Create the FPFH estimation class, and pass the input dataset+normals to it
 //	pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
 //	//pcl::FPFHEstimationOMP<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-//	//fpfh.setNumberOfThreads(4);
+//	//fpfh.setNumberOfThreads(NumberOfThreads);
 //	fpfh.setInputCloud(cloud);
 //	fpfh.setInputNormals(normals);
 //	// alternatively, if cloud is of tpe PointNormal, do fpfh.setInputNormals (cloud);

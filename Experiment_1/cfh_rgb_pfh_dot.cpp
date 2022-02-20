@@ -1,7 +1,7 @@
-#include "cfh_rgb_dot.h"
+#include "cfh_rgb_pfh_dot.h"
 #include <pcl/features/pfh_tools.h>
 
-void CFH_Estimation_RGB_DOT::computeFeature(pcl::PointCloud<pcl::FPFHSignature33>& output)
+void CFH_Estimation_RGB_PFH_DOT::computeFeature(pcl::PointCloud<pcl::FPFHSignature33>& output)
 {
     // resize output
     output.resize(input_keypoints_->size());//为output分配空间，否则会出现向量下标越界
@@ -23,12 +23,12 @@ void CFH_Estimation_RGB_DOT::computeFeature(pcl::PointCloud<pcl::FPFHSignature33
     }
 }
 
-void CFH_Estimation_RGB_DOT::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) { input_cloud_ = input_cloud; }
-void CFH_Estimation_RGB_DOT::setInputNormal(pcl::PointCloud<pcl::Normal>::Ptr input_normals) { input_normals_ = input_normals; }
-void CFH_Estimation_RGB_DOT::setInputKeypoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_keypoints) { input_keypoints_ = input_keypoints; }
-void CFH_Estimation_RGB_DOT::setSearchRadius(double search_radius) { search_radius_ = search_radius; }
+void CFH_Estimation_RGB_PFH_DOT::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) { input_cloud_ = input_cloud; }
+void CFH_Estimation_RGB_PFH_DOT::setInputNormal(pcl::PointCloud<pcl::Normal>::Ptr input_normals) { input_normals_ = input_normals; }
+void CFH_Estimation_RGB_PFH_DOT::setInputKeypoints(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_keypoints) { input_keypoints_ = input_keypoints; }
+void CFH_Estimation_RGB_PFH_DOT::setSearchRadius(double search_radius) { search_radius_ = search_radius; }
 
-void CFH_Estimation_RGB_DOT::searchForNeighbors(std::size_t index, double radius, pcl::Indices& indices, std::vector<float>& distances)
+void CFH_Estimation_RGB_PFH_DOT::searchForNeighbors(std::size_t index, double radius, pcl::Indices& indices, std::vector<float>& distances)
 {
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(input_cloud_);
@@ -50,12 +50,12 @@ void CFH_Estimation_RGB_DOT::searchForNeighbors(std::size_t index, double radius
     }
     else
     {
-        PCL_WARN("CFH_Estimation_RGB_DOT::searchForNeighbors: kdtree.radiusSearch() == 0");
+        PCL_WARN("CFH_Estimation_RGB_PFH_DOT::searchForNeighbors: kdtree.radiusSearch() == 0");
     }
 
 }
 
-void CFH_Estimation_RGB_DOT::computePointSignature(pcl::PointCloud<pcl::PointXYZRGB>& cloud, pcl::Indices& indices, int nr_split, Eigen::VectorXf& cfh_histogram)
+void CFH_Estimation_RGB_PFH_DOT::computePointSignature(pcl::PointCloud<pcl::PointXYZRGB>& cloud, pcl::Indices& indices, int nr_split, Eigen::VectorXf& cfh_histogram)
 {
     int h_index;
 
@@ -93,7 +93,7 @@ void CFH_Estimation_RGB_DOT::computePointSignature(pcl::PointCloud<pcl::PointXYZ
     }
 }
 
-bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXYZRGB>& cloud, int p_idx, int q_idx, float& f1)
+bool CFH_Estimation_RGB_PFH_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXYZRGB>& cloud, int p_idx, int q_idx, float& f1)
 {
     float r1 = cloud[p_idx].r / static_cast<float>(255) - 0.5;
     float g1 = cloud[p_idx].g / static_cast<float>(255) - 0.5;
@@ -109,7 +109,7 @@ bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(pcl::PointCloud<pcl::PointXY
     return (true);
 }
 
-bool CFH_Estimation_RGB_DOT::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
+bool CFH_Estimation_RGB_PFH_DOT::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
 {
     f1 = colors1.dot(colors2);
     return (true);

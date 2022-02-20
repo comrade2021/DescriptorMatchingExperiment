@@ -6,6 +6,10 @@
 #include <pcl/common/transforms.h>
 #include <pcl/filters/voxel_grid.h>
 
+#ifndef NumberOfThreads
+#define NumberOfThreads 2
+#endif // !NumberOfThreads
+
 //计算关键点有三个步骤：
 //1.在模型点云上检测关键点。
 //2.将（1）中获得的模型关键点，进行坐标变换（来自数据集标注的真实变换矩阵），得到场景中的对应关键点。
@@ -143,7 +147,7 @@ void KeypointsDetector::computeISS3DKeypoints(
 	iss_detector.setThreshold21(0.975);
 	iss_detector.setThreshold32(0.975);
 	iss_detector.setMinNeighbors(5);
-	iss_detector.setNumberOfThreads(4);
+	iss_detector.setNumberOfThreads(NumberOfThreads);
 	iss_detector.setInputCloud(cloud_model);
 	iss_detector.setNormals(normal_m);
 	iss_detector.compute(*keypoints_unfiltered_m);

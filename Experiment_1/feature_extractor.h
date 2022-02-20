@@ -52,14 +52,7 @@ public:
 		double radius,
 		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
 
-	/// <summary>
-	/// 计算纯色彩信息直方图(RGB pfhrgb-rate)
-	/// </summary>
-	/// <param name="cloud">输入点云</param>
-	/// <param name="keypoints">输入关键点</param>
-	/// <param name="normal">输入法线</param>
-	/// <param name="radius">特征计算半径</param>
-	/// <param name="feature">输出特征</param>
+	/// 计算色彩直方图（RGB pfh结构 rate）
 	void computeCFH_RGB_PFH_RATE(
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,

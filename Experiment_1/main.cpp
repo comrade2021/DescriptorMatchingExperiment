@@ -16,13 +16,18 @@
 #include "file_reader.h"
 #include "experiment.h"
 #include <pcl/features/fpfh_omp.h>
-#include "cfh_rgb_rate_33.h"
+#include "cfh_rgb_pfh_rate.h"
 
 #include <pcl/io/ply_io.h>
 #include <pcl/features/normal_3d_omp.h>
 #include "keypoints_detector.h"
-#include "cfh_rgb_dot.h"
+#include "cfh_rgb_pfh_dot.h"
 #include "cfh_rgb_fpfh_rate.hpp"
+
+#ifndef NumberOfThreads
+#define NumberOfThreads 2
+#endif // !NumberOfThreads
+
 
 //int main() {
 //    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
@@ -46,7 +51,7 @@
 //    ne.setSearchMethod(tree_1);
 //    ne.setInputCloud(cloud);
 //    ne.setRadiusSearch(0.4);
-//    ne.setNumberOfThreads(4);
+//    ne.setNumberOfThreads(NumberOfThreads);
 //    ne.compute(*normals);
 //
 //    ////feature
@@ -67,7 +72,7 @@
 //    pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_f(new pcl::search::KdTree<pcl::PointXYZRGB>());
 //    es.setSearchMethod(tree_f);
 //    es.setRadiusSearch(1.7);
-//    //es.setNumberOfThreads(4);
+//    //es.setNumberOfThreads(NumberOfThreads);
 //    pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh(new pcl::PointCloud<pcl::FPFHSignature33>());
 //    es.compute(*fpfh);
 //
@@ -122,7 +127,7 @@ main() {
 	std::vector<double> sum_recall(NUM_ALPHA * NUM_OF_DESCRIPTOR_TESTED);
 
 	//std::vector<std::string> features_name = { "CFH_RGB_PFH_RATE","CFH_RGB_PFH_DOT"};
-	std::vector<std::string> features_name = {"CFH_RGB_FPFH_RATE"};
+	std::vector<std::string> features_name = {"PFHRGB"};
 	/*
 	测试新的特征时，注意：
 
@@ -328,22 +333,22 @@ main() {
 	//	vector_r.push_back(r);
 	//}
 
-	//CFH_RGB_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
-	for (size_t i = 0; i < 20; i++)
-	{
-		if (exp.matches_sum_cfh_rgb_fpfh_rate_[i] == 0)
-		{
-			p = 1;
-			r = 0;
-		}
-		else
-		{
-			p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_rate_[i]) / exp.matches_sum_cfh_rgb_fpfh_rate_[i];
-			r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_rate_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_rate_[i];
-		}
-		vector_p.push_back(p);
-		vector_r.push_back(r);
-	}
+	////CFH_RGB_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_rgb_fpfh_rate_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_rate_[i]) / exp.matches_sum_cfh_rgb_fpfh_rate_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_rate_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_rate_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
 
 	////fpfh-rgb-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
@@ -361,22 +366,22 @@ main() {
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
-	////pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
-	//for (size_t i = 0; i < 20; i++)
-	//{
-	//	if (exp.matches_sum_pfhrgb_[i]==0)
-	//	{
-	//		p = 1;
-	//		r = 0;
-	//	}
-	//	else
-	//	{
-	//		p = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.matches_sum_pfhrgb_[i];
-	//		r = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.corresponding_regions_sum_pfhrgb_[i];
-	//	}
-	//	vector_p.push_back(p);
-	//	vector_r.push_back(r);
-	//}
+	//pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
+	for (size_t i = 0; i < 20; i++)
+	{
+		if (exp.matches_sum_pfhrgb_[i]==0)
+		{
+			p = 1;
+			r = 0;
+		}
+		else
+		{
+			p = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.matches_sum_pfhrgb_[i];
+			r = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.corresponding_regions_sum_pfhrgb_[i];
+		}
+		vector_p.push_back(p);
+		vector_r.push_back(r);
+	}
 	////shot-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{

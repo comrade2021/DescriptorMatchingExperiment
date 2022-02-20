@@ -2,6 +2,10 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/radius_outlier_removal.h>
 
+#ifndef NumberOfThreads
+#define NumberOfThreads 2
+#endif // !NumberOfThreads
+
 void MyNormalEstimation::computeNormal(
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_model, 
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud_scene, 
@@ -12,8 +16,8 @@ void MyNormalEstimation::computeNormal(
 {
 	//估计法线
 	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne_1,ne_2;//创建法线估计类的对象
-	ne_1.setNumberOfThreads(4);//设置使用的线程数量（cpu核心数量）
-	ne_2.setNumberOfThreads(4);
+	ne_1.setNumberOfThreads(NumberOfThreads);//设置使用的线程数量（cpu核心数量）
+	ne_2.setNumberOfThreads(NumberOfThreads);
 	ne_1.setInputCloud(input_cloud_model);//设置待计算的输入点云
 	ne_2.setInputCloud(input_cloud_scene);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_m(new pcl::search::KdTree<pcl::PointXYZRGB>());//创建kd树对象，用来加速近邻点搜索
@@ -80,7 +84,7 @@ void MyNormalEstimation::computeNormal(
 void MyNormalEstimation::computeNormal(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, double radius, pcl::PointCloud<pcl::Normal>::Ptr normal)
 {
 	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;//创建法线估计类
-	ne.setNumberOfThreads(4);//设置使用的线程数量（cpu核心数量）
+	ne.setNumberOfThreads(NumberOfThreads);//设置使用的线程数量（cpu核心数量）
 	ne.setInputCloud(cloud);
 	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());//使用kd树进行近邻搜索
 	ne.setSearchMethod(tree);

@@ -13,13 +13,13 @@
 #include "validator.h"
 
 //#define PFH
-#define FPFH
+//#define FPFH
 //#define CFH_RGB_PFH_RATE
 //#define CFH_RGB_PFH_DOT
 //#define CFH_RGB_FPFH_RATE
 
 //#define FPFH_RGB_ORI
-//#define PFHRGB
+#define PFHRGB
 //#define SHOT
 //#define CSHOT
 

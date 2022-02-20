@@ -84,10 +84,10 @@
     <ClCompile Include="cfh.cpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
-    <ClCompile Include="cfh_rgb_rate_33.cpp">
+    <ClCompile Include="cfh_rgb_pfh_rate.cpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
-    <ClCompile Include="cfh_rgb_dot.cpp">
+    <ClCompile Include="cfh_rgb_pfh_dot.cpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
     <ClCompile Include="cfh_rgb_fpfh_rate.hpp">
@@ -125,10 +125,10 @@
     <ClInclude Include="cfh.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cfh_rgb_rate_33.h">
+    <ClInclude Include="cfh_rgb_pfh_rate.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="cfh_rgb_dot.h">
+    <ClInclude Include="cfh_rgb_pfh_dot.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="cfh_rgb.h">
