@@ -1,5 +1,14 @@
 #pragma once
 
+/*
+邻域拓扑结构：FPFH
+色彩空间：RGB
+点对间的度量方式：以RGB三个通道的比值代替原FPFH的法线之间的三个角度
+直方图构造：与FPFH一样
+
+与FPFH的差异：用两点的RGB值计算三个数值（各色彩通道的比值），代替点对的三个法线角度
+*/
+
 #include <pcl/features/feature.h>
 
 namespace pcl

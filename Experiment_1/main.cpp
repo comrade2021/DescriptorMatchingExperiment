@@ -127,7 +127,7 @@ main() {
 	std::vector<double> sum_recall(NUM_ALPHA * NUM_OF_DESCRIPTOR_TESTED);
 
 	//std::vector<std::string> features_name = { "CFH_RGB_PFH_RATE","CFH_RGB_PFH_DOT"};
-	std::vector<std::string> features_name = {"PFHRGB"};
+	std::vector<std::string> features_name = {"FPFH_CFH_RGB_FPFH_DOT"};
 	/*
 	测试新的特征时，注意：
 
@@ -333,6 +333,23 @@ main() {
 	//	vector_r.push_back(r);
 	//}
 
+	//CFH_RGB_FPFH_DOT  ! 如果不是正在测试的特征，请将此处注释
+	for (size_t i = 0; i < 20; i++)
+	{
+		if (exp.matches_sum_cfh_rgb_fpfh_dot_[i] == 0)
+		{
+			p = 1;
+			r = 0;
+		}
+		else
+		{
+			p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.matches_sum_cfh_rgb_fpfh_dot_[i];
+			r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_dot_[i];
+		}
+		vector_p.push_back(p);
+		vector_r.push_back(r);
+	}
+
 	////CFH_RGB_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
@@ -350,38 +367,39 @@ main() {
 	//	vector_r.push_back(r);
 	//}
 
-	////fpfh-rgb-pr  ! 如果不是正在测试的特征，请将此处注释
+	////fpfh_cfh_rgb_fpfh_rate-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
-	//	if (exp.matches_sum_fpfh_rgb_[i] == 0)
+	//	if (exp.matches_sum_fpfh_cfh_rgb_fpfh_rate_[i] == 0)
 	//	{
 	//		p = 1;
 	//		r = 0;
 	//	}
 	//	else
 	//	{
-	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.matches_sum_fpfh_rgb_[i];
-	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_rgb_[i]) / exp.corresponding_regions_sum_fpfh_rgb_[i];
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[i]) / exp.matches_sum_fpfh_cfh_rgb_fpfh_rate_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[i]) / exp.corresponding_regions_sum_fpfh_cfh_rgb_fpfh_rate_[i];
 	//	}
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
-	//pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
-	for (size_t i = 0; i < 20; i++)
-	{
-		if (exp.matches_sum_pfhrgb_[i]==0)
-		{
-			p = 1;
-			r = 0;
-		}
-		else
-		{
-			p = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.matches_sum_pfhrgb_[i];
-			r = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.corresponding_regions_sum_pfhrgb_[i];
-		}
-		vector_p.push_back(p);
-		vector_r.push_back(r);
-	}
+	
+	////pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_pfhrgb_[i]==0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.matches_sum_pfhrgb_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_pfhrgb_[i]) / exp.corresponding_regions_sum_pfhrgb_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
 	////shot-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{

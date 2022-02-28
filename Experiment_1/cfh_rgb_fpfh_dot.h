@@ -62,8 +62,6 @@ namespace pcl
           */
         void
             weightPointSPFHSignature(const Eigen::MatrixXf& hist_f1,
-                const Eigen::MatrixXf& hist_f2,
-                const Eigen::MatrixXf& hist_f3,
                 const pcl::Indices& indices,
                 const std::vector<float>& dists,
                 Eigen::VectorXf& fpfh_histogram);
@@ -72,13 +70,12 @@ namespace pcl
           * \param[in] nr_bins_f1 number of subdivisions for the first angular feature
           * \param[in] nr_bins_f2 number of subdivisions for the second angular feature
           * \param[in] nr_bins_f3 number of subdivisions for the third angular feature
+          * cfh_rgb_fpfh_dot的点对差异度量结果只有一个点积，而不是fpfh的三个角度。
           */
         inline void
-            setNrSubdivisions(int nr_bins_f1, int nr_bins_f2, int nr_bins_f3)
+            setNrSubdivisions(int nr_bins_f1)
         {
             nr_bins_f1_ = nr_bins_f1;
-            nr_bins_f2_ = nr_bins_f2;
-            nr_bins_f3_ = nr_bins_f3;
         }
 
         /** \brief Get the number of subdivisions for each angular feature interval.
@@ -87,11 +84,9 @@ namespace pcl
           * \param[out] nr_bins_f3 number of subdivisions for the third angular feature
            */
         inline void
-            getNrSubdivisions(int& nr_bins_f1, int& nr_bins_f2, int& nr_bins_f3)
+            getNrSubdivisions(int& nr_bins_f1)
         {
             nr_bins_f1 = nr_bins_f1_;
-            nr_bins_f2 = nr_bins_f2_;
-            nr_bins_f3 = nr_bins_f3_;
         }
 
     protected:
@@ -104,7 +99,7 @@ namespace pcl
           */
         void
             computeSPFHSignatures(std::vector<int>& spf_hist_lookup,
-                Eigen::MatrixXf& hist_f1, Eigen::MatrixXf& hist_f2, Eigen::MatrixXf& hist_f3);
+                Eigen::MatrixXf& hist_f1);
 
         /** \brief The number of subdivisions for each angular feature interval. */
         int nr_bins_f1_;

@@ -17,9 +17,10 @@
 //#define CFH_RGB_PFH_RATE
 //#define CFH_RGB_PFH_DOT
 //#define CFH_RGB_FPFH_RATE
+#define CFH_RGB_FPFH_DOT
 
-//#define FPFH_RGB_ORI
-#define PFHRGB
+//#define FPFH_CFH_RGB_FPFH_RATE
+//#define PFHRGB
 //#define SHOT
 //#define CSHOT
 
@@ -649,33 +650,33 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	}
 #endif // CFH_RGB_FPFH_RATE
 
-#ifdef FPFH_RGB_ORI
-	//5.1.计算特征的PR曲线（形状融合色彩,fpfh+pfhrgb）
+#ifdef CFH_RGB_FPFH_DOT
+	//5.计算特征的PR曲线（cfh_rgb_fpfh_dot）
 	//计算特征
-	pcl::PointCloud<pcl::PFHSignature125>::Ptr fpfh_rgb_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
-	pcl::PointCloud<pcl::PFHSignature125>::Ptr fpfh_rgb_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
-	pcl::PointCloud<pcl::PFHSignature125>::Ptr fpfh_rgb_s(new pcl::PointCloud<pcl::PFHSignature125>());
-	FeatureExtractor ex_fpfh_rgb;
-	ex_fpfh_rgb.compute_FPFH_AND_PFHRGB(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, fpfh_rgb_m_1);
-	ex_fpfh_rgb.compute_FPFH_AND_PFHRGB(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, fpfh_rgb_m_2);
-	ex_fpfh_rgb.compute_FPFH_AND_PFHRGB(cloud_scene, keypoints_s, normal_s, radius_feature_s, fpfh_rgb_s);
-	std::cout << "------------------- Calculate FPFH_RGB_ORI Features --------------------" << std::endl;
-	std::cout << "feature_m_1 size: " << fpfh_rgb_m_1->size() << std::endl;
-	std::cout << "feature_m_2 size: " << fpfh_rgb_m_2->size() << std::endl;
-	std::cout << "feature_s size: " << fpfh_rgb_s->size() << std::endl;
-	//拼接特征（FPFH_RGB_ORI）
-	pcl::PointCloud<pcl::PFHSignature125>::Ptr fpfh_rgb_m(new pcl::PointCloud<pcl::PFHSignature125>());
-	*fpfh_rgb_m += *fpfh_rgb_m_1;
-	*fpfh_rgb_m += *fpfh_rgb_m_2;
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh003_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh003_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh003_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh003;
+	ex_cfh003.computeCFH_RGB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh003_m_1);
+	ex_cfh003.computeCFH_RGB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh003_m_2);
+	ex_cfh003.computeCFH_RGB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh003_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh003_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh003_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh003_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh003_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh003_m += *cfh003_m_1;
+	*cfh003_m += *cfh003_m_2;
 	//计算PR曲线
-	features_name.push_back("FPFH_RGB_ORI");
+	features_name.push_back("CFH_RGB_FPFH_DOT");
 	for (size_t i = 0; i <= alpha_devide - 1; i++)
 	{
 		// 匹配：corrs_match
 		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
 		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
 		FeatureMatch matcher;
-		matcher.match_r(fpfh_rgb_m, fpfh_rgb_s, corrs_match, threshold_alpha);
+		matcher.match_r(cfh003_m, cfh003_s, corrs_match, threshold_alpha);
 		// 验证：correct matches
 		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
 		Validator va;
@@ -703,13 +704,13 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		}
 		precision.push_back(p);
 		recall.push_back(r);
-		correct_matches_sum_fpfh_rgb_[i] += correct_matches->size();
-		matches_sum_fpfh_rgb_[i] += corrs_match->size();
-		corresponding_regions_sum_fpfh_rgb_[i] += all_correspondences->size();
-		std::cout << "correct_matches_sum_fpfh_rgb_[i]:   " << correct_matches_sum_fpfh_rgb_[i] << std::endl;
-		std::cout << "matches_sum_fpfh_rgb_[i]:   " << matches_sum_fpfh_rgb_[i] << std::endl;
-		std::cout << "corresponding_regions_sum_fpfh_rgb_[i]:   " << corresponding_regions_sum_fpfh_rgb_[i] << std::endl;
-		std::cout << "--------------------------- FPFH_RGB_ORI ---------------------------" << std::endl;
+		correct_matches_sum_cfh_rgb_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_cfh_rgb_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_rgb_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_rgb_fpfh_dot_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_cfh_rgb_fpfh_dot_[i]:   " << matches_sum_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_dot_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- CFH_RGB_FPFH_DOT ------------------------------" << std::endl;
 		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
 		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
 		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
@@ -722,7 +723,82 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		std::cout << "recall: " << r << std::endl;
 		std::cout << std::endl << std::endl << std::endl << std::endl;
 	}
-#endif // FPFH_RGB_ORI
+#endif // CFH_RGB_FPFH_DOT
+
+#ifdef FPFH_CFH_RGB_FPFH_RATE
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc002;
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc002_m_1);
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc002_m_2);
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc002_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc002_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc002_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc002_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc002_m += *sc002_m_1;
+	*sc002_m += *sc002_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_RGB_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc002_m, sc002_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_rgb_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_rgb_fpfh_rate_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[i]:   " << correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_rgb_fpfh_rate_[i]:   " << matches_sum_fpfh_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_rgb_fpfh_rate_[i]:   " << corresponding_regions_sum_fpfh_cfh_rgb_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_RGB_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_RGB_FPFH_RATE
+
 #ifdef PFHRGB
 
 	//6.计算特征的PR曲线（PFHRGB）
@@ -864,7 +940,6 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	}
 #endif // SHOT
 #ifdef CSHOT
-
 	//8.计算特征的PR曲线（CSHOT）
 	//计算特征（CSHOT）
 	pcl::PointCloud<pcl::SHOT1344>::Ptr cshot_m_1(new pcl::PointCloud<pcl::SHOT1344>());
