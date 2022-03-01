@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "cfh_rgb_fpfh_rate.h"
 
@@ -233,7 +233,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeFeature(
         {
             if (this->searchForNeighbors((*indices_)[idx], search_parameter_, nn_indices, nn_dists) == 0)
             {
-                for (Eigen::Index d = 0; d < fpfh_histogram_.size(); ++d)
+                for (Eigen::Index d = 0; d < 33; ++d)
                     output[idx].histogram[d] = std::numeric_limits<float>::quiet_NaN();
 
                 output.is_dense = false;
@@ -249,7 +249,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeFeature(
             weightPointSPFHSignature(hist_f1_, hist_f2_, hist_f3_, nn_indices, nn_dists, fpfh_histogram_);
 
             // ...and copy it into the output cloud
-            std::copy_n(fpfh_histogram_.data(), fpfh_histogram_.size(), output[idx].histogram);
+            std::copy_n(fpfh_histogram_.data(), 33, output[idx].histogram);
         }
     }
     else
@@ -260,7 +260,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeFeature(
             if (!isFinite((*input_)[(*indices_)[idx]]) ||
                 this->searchForNeighbors((*indices_)[idx], search_parameter_, nn_indices, nn_dists) == 0)
             {
-                for (Eigen::Index d = 0; d < fpfh_histogram_.size(); ++d)
+                for (Eigen::Index d = 0; d < 33; ++d)
                     output[idx].histogram[d] = std::numeric_limits<float>::quiet_NaN();
 
                 output.is_dense = false;
@@ -276,7 +276,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeFeature(
             weightPointSPFHSignature(hist_f1_, hist_f2_, hist_f3_, nn_indices, nn_dists, fpfh_histogram_);
 
             // ...and copy it into the output cloud
-            std::copy_n(fpfh_histogram_.data(), fpfh_histogram_.size(), output[idx].histogram);
+            std::copy_n(fpfh_histogram_.data(), 33, output[idx].histogram);
         }
     }
 }

@@ -91,3 +91,56 @@
 //
 //	//return 0;
 //}
+
+
+
+//#include <pcl/point_cloud.h>
+//#include <pcl/kdtree/kdtree_flann.h>
+//
+//#include <iostream>
+//#include <vector>
+//#include <ctime>
+//#include <pcl/io/ply_io.h>
+//
+//int
+//main()
+//{
+//    srand(time(NULL));
+//
+//    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+//    pcl::io::loadPLYFile("./dataset3/3D models/CVLab/2010-03-03/Scena1/scene1.ply", *cloud);
+//
+//    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+//
+//    kdtree.setInputCloud(cloud);
+//
+//    for (size_t i = 0; i < 10000; i++)
+//    {
+//        pcl::PointXYZRGB searchPoint = cloud->at(i);
+//
+//        // Neighbors within radius search
+//
+//        std::vector<int> pointIdxRadiusSearch;
+//        std::vector<float> pointRadiusSquaredDistance;
+//
+//        float radius = 1.72;
+//
+//        std::cout << "Neighbors within radius search at (" << searchPoint.x
+//            << " " << searchPoint.y
+//            << " " << searchPoint.z
+//            << ") with radius=" << radius << std::endl;
+//
+//
+//        if (kdtree.radiusSearch(searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 1000)
+//        {
+//            for (std::size_t i = 0; i < pointIdxRadiusSearch.size(); ++i)
+//                std::cout << "    " << (*cloud)[pointIdxRadiusSearch[i]].x
+//                << " " << (*cloud)[pointIdxRadiusSearch[i]].y
+//                << " " << (*cloud)[pointIdxRadiusSearch[i]].z
+//                << " (squared distance: " << pointRadiusSquaredDistance[i] << ")" << std::endl;
+//        }
+//    }
+//
+//
+//    return 0;
+//}

@@ -13,6 +13,16 @@
 #ifndef NumberOfThreads
 #define NumberOfThreads 2
 #endif // !NumberOfThreads
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/pcl_plotter.h>
+#include <vtkAutoInit.h>
+
+VTK_MODULE_INIT(vtkRenderingOpenGL2);
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
+VTK_MODULE_INIT(vtkInteractionStyle);
+VTK_MODULE_INIT(vtkRenderingFreeType);
+VTK_MODULE_INIT(vtkRenderingContextOpenGL2);
+
  
 void FeatureExtractor::computePFH(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHSignature125>::Ptr feature)
 {
@@ -85,6 +95,25 @@ void FeatureExtractor::computeCFH_RGB_FPFH_RATE(pcl::PointCloud<pcl::PointXYZRGB
 
 void FeatureExtractor::computeCFH_RGB_FPFH_DOT(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature)
 {
+	/*pcl::CFH_Estimation_RGB_FPFH_DOT<pcl::PointXYZRGB, pcl::Normal, pcl::PFHSignature125> es;
+	es.setInputCloud(keypoints);
+	es.setSearchSurface(cloud);
+	es.setInputNormals(normal);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree_f(new pcl::search::KdTree<pcl::PointXYZRGB>());
+	es.setSearchMethod(tree_f);
+	es.setRadiusSearch(radius);
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr feature_125(new pcl::PointCloud<pcl::PFHSignature125>);
+	es.compute(*feature_125);
+
+	for (size_t i = 0; i < feature_125->size(); i++)
+	{
+		for (size_t j = 0; j < 33; j++)
+		{
+			feature->at(i).histogram[j] = feature_125->at(i).histogram[j];
+		}
+	}*/
+
+	//==================33============================
 	pcl::CFH_Estimation_RGB_FPFH_DOT<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> es;
 	es.setInputCloud(keypoints);
 	es.setSearchSurface(cloud);
@@ -93,6 +122,28 @@ void FeatureExtractor::computeCFH_RGB_FPFH_DOT(pcl::PointCloud<pcl::PointXYZRGB>
 	es.setSearchMethod(tree_f);
 	es.setRadiusSearch(radius);
 	es.compute(*feature);
+
+	//可视化
+	pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D Viewer"));
+	viewer->setBackgroundColor(0, 0, 0);
+	viewer->addPointCloud<pcl::PointXYZRGB>(cloud, "cloud_model");
+	viewer->addSphere((*cloud)[0], 1.7, 0.5, 0.5, 0.0, "sphere");
+	//可视化特征直方图
+	pcl::visualization::PCLPlotter* plotter = new pcl::visualization::PCLPlotter("Feature Histogram");
+	std::cout <<"getFieldsList FPFHSignature33 :" << pcl::getFieldsList<pcl::FPFHSignature33>(*feature)<<std::endl;
+	std::cout <<"getFieldsList PointXYZRGB :" << pcl::getFieldsList<pcl::PointXYZRGB>(*cloud)<< std::endl;
+	plotter->addFeatureHistogram(*feature,"fpfh",30,"feature");
+	plotter->plot();
+	while (!viewer->wasStopped())
+	{
+		viewer->spinOnce(100);
+	}
+
+	for (size_t j = 0; j < 33; j++)
+	{
+		std::cout << feature->at(30).histogram[j] << ",";
+	}
+	std::cout << std::endl << std::endl;
 }
 
 void FeatureExtractor::computeFPFH_CFH_RGB_FPFH_RATE(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints, pcl::PointCloud<pcl::Normal>::Ptr normal, double radius, pcl::PointCloud<pcl::PFHSignature125>::Ptr feature)

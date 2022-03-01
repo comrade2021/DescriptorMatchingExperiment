@@ -23,19 +23,32 @@ namespace pcl
 
         /** \brief Empty constructor. */
         CFH_Estimation_RGB_FPFH_DOT() :
-            nr_bins_f1_(33),
+            nr_bins_f1_(33), nr_bins_f2_(33), nr_bins_f3_(33),
             d_pi_(1.0f / (2.0f * static_cast<float> (M_PI)))
         {
             feature_name_ = "CFH_Estimation_RGB_FPFH_DOT";
         };
 
-        /*计算两点RGB三元组之间的点积*/
+        /** \brief Compute the 4-tuple representation containing the three angles and one distance between two points
+          * represented by Cartesian coordinates and normals.
+          * \note For explanations about the features, please see the literature mentioned above (the order of the
+          * features might be different).
+          * \param[in] cloud the dataset containing the XYZ Cartesian coordinates of the two points
+          * \param[in] normals the dataset containing the surface normals (assuming normalized vectors) at each point in cloud
+          * \param[in] p_idx the index of the first point (source)
+          * \param[in] q_idx the index of the second point (target)
+          * \param[out] f1 the first angular feature (angle between the projection of nq_idx and u)
+          * \param[out] f2 the second angular feature (angle between nq_idx and v)
+          * \param[out] f3 the third angular feature (angle between np_idx and |p_idx - q_idx|)
+          * \param[out] f4 the distance feature (p_idx - q_idx)
+          */
         bool
-            computePairFeatures(const pcl::PointCloud<PointInT>& cloud,int p_idx, int q_idx, float& f1);
+            computePairFeatures(const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
+                int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4);
 
-        /*计算两点RGB三元组之间的点积，由于长度已经规范化，所以结果是向量之间夹角的余弦(cos)，代替原来的pcl::pcl::computePairFeatures */
+        /*计算两点各色彩通道的比值，代替原来的pcl::pcl::computePairFeatures */
         bool
-            computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1);
+            computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1, float& f2, float& f3, float& f4);
 
         /** \brief Estimate the SPFH (Simple Point Feature Histograms) individual signatures of the three angular
           * (f1, f2, f3) features for a given point based on its spatial neighborhood of 3D points with normals
@@ -49,7 +62,10 @@ namespace pcl
           * \param[out] hist_f3 the resultant SPFH histogram for feature f3
           */
         void
-            computePointSPFHSignature(const pcl::PointCloud<PointInT>& cloud, pcl::index_t p_idx, int row,const pcl::Indices& indices,Eigen::MatrixXf& hist_f1);
+            computePointSPFHSignature(const pcl::PointCloud<PointInT>& cloud,
+                const pcl::PointCloud<PointNT>& normals, pcl::index_t p_idx, int row,
+                const pcl::Indices& indices,
+                Eigen::MatrixXf& hist_f1, Eigen::MatrixXf& hist_f2, Eigen::MatrixXf& hist_f3);
 
         /** \brief Weight the SPFH (Simple Point Feature Histograms) individual histograms to create the final FPFH
           * (Fast Point Feature Histogram) for a given point based on its 3D spatial neighborhood
@@ -62,6 +78,8 @@ namespace pcl
           */
         void
             weightPointSPFHSignature(const Eigen::MatrixXf& hist_f1,
+                const Eigen::MatrixXf& hist_f2,
+                const Eigen::MatrixXf& hist_f3,
                 const pcl::Indices& indices,
                 const std::vector<float>& dists,
                 Eigen::VectorXf& fpfh_histogram);
@@ -70,12 +88,13 @@ namespace pcl
           * \param[in] nr_bins_f1 number of subdivisions for the first angular feature
           * \param[in] nr_bins_f2 number of subdivisions for the second angular feature
           * \param[in] nr_bins_f3 number of subdivisions for the third angular feature
-          * cfh_rgb_fpfh_dot的点对差异度量结果只有一个点积，而不是fpfh的三个角度。
           */
         inline void
-            setNrSubdivisions(int nr_bins_f1)
+            setNrSubdivisions(int nr_bins_f1, int nr_bins_f2, int nr_bins_f3)
         {
             nr_bins_f1_ = nr_bins_f1;
+            nr_bins_f2_ = nr_bins_f2;
+            nr_bins_f3_ = nr_bins_f3;
         }
 
         /** \brief Get the number of subdivisions for each angular feature interval.
@@ -84,9 +103,11 @@ namespace pcl
           * \param[out] nr_bins_f3 number of subdivisions for the third angular feature
            */
         inline void
-            getNrSubdivisions(int& nr_bins_f1)
+            getNrSubdivisions(int& nr_bins_f1, int& nr_bins_f2, int& nr_bins_f3)
         {
             nr_bins_f1 = nr_bins_f1_;
+            nr_bins_f2 = nr_bins_f2_;
+            nr_bins_f3 = nr_bins_f3_;
         }
 
     protected:
@@ -99,13 +120,19 @@ namespace pcl
           */
         void
             computeSPFHSignatures(std::vector<int>& spf_hist_lookup,
-                Eigen::MatrixXf& hist_f1);
+                Eigen::MatrixXf& hist_f1, Eigen::MatrixXf& hist_f2, Eigen::MatrixXf& hist_f3);
 
         /** \brief The number of subdivisions for each angular feature interval. */
-        int nr_bins_f1_;
+        int nr_bins_f1_, nr_bins_f2_, nr_bins_f3_;
 
         /** \brief Placeholder for the f1 histogram. */
         Eigen::MatrixXf hist_f1_;
+
+        /** \brief Placeholder for the f2 histogram. */
+        Eigen::MatrixXf hist_f2_;
+
+        /** \brief Placeholder for the f3 histogram. */
+        Eigen::MatrixXf hist_f3_;
 
         /** \brief Placeholder for a point's FPFH signature. */
         Eigen::VectorXf fpfh_histogram_;
