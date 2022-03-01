@@ -67,7 +67,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePointSPF
             continue;
 
         // Normalize the f1, f2, f3 features and push them in the histogram
-        int h_index = static_cast<int> (std::floor(nr_bins_f1 * ((pfh_tuple[0] + M_PI) * d_pi_)));
+        int h_index = static_cast<int> (std::floor(nr_bins_f1 * ((pfh_tuple[0] + 1.0) * 0.5)));
         if (h_index < 0)           h_index = 0;
         if (h_index >= nr_bins_f1) h_index = nr_bins_f1 - 1;
         hist_f1(row, h_index) += hist_incr;
