@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="源文件\Test">
       <UniqueIdentifier>{db63df3b-be6e-4cbb-bda5-1ee22e7c7f88}</UniqueIdentifier>
     </Filter>
@@ -33,6 +29,10 @@
     </Filter>
     <Filter Include="源文件\experiment">
       <UniqueIdentifier>{c5ac05e4-a465-4451-a22a-932e346d387d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +141,66 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="cfh_rgb_fpfh_dot.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_L1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_L1.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_L2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_L2.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_rate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_rate.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_dot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_dot.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_L1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_L1.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_L2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_hsv_fpfh_L2.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_rate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_L2.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_L1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_dot.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_dot.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_L1.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_L2.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_lab_fpfh_rate.hpp">
       <Filter>源文件\feature</Filter>
     </ClInclude>
   </ItemGroup>

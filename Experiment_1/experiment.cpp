@@ -1,4 +1,4 @@
-#include "experiment.h"
+﻿#include "experiment.h"
 #include <ctime>
 #include "file_reader.h"
 #include <pcl/io/ply_io.h>
@@ -16,10 +16,41 @@
 //#define FPFH
 //#define CFH_RGB_PFH_RATE
 //#define CFH_RGB_PFH_DOT
+
+//--------------C------------------
+
 //#define CFH_RGB_FPFH_RATE
-#define CFH_RGB_FPFH_DOT
+//#define CFH_RGB_FPFH_DOT
+//#define CFH_RGB_FPFH_L1
+//#define CFH_RGB_FPFH_L2
+ 
+//#define CFH_HSV_FPFH_RATE
+//#define CFH_HSV_FPFH_DOT
+//#define CFH_HSV_FPFH_L1
+//#define CFH_HSV_FPFH_L2
+
+//#define CFH_LAB_FPFH_RATE
+//#define CFH_LAB_FPFH_DOT
+//#define CFH_LAB_FPFH_L1
+//#define CFH_LAB_FPFH_L2
+
+//------------S+C--------------------
 
 //#define FPFH_CFH_RGB_FPFH_RATE
+//#define FPFH_CFH_RGB_FPFH_DOT
+//#define FPFH_CFH_RGB_FPFH_L1
+//#define FPFH_CFH_RGB_FPFH_L2
+
+//#define FPFH_CFH_HSV_FPFH_RATE
+//#define FPFH_CFH_HSV_FPFH_DOT
+//#define FPFH_CFH_HSV_FPFH_L1
+//#define FPFH_CFH_HSV_FPFH_L2
+
+//#define FPFH_CFH_LAB_FPFH_RATE
+//#define FPFH_CFH_LAB_FPFH_DOT
+//#define FPFH_CFH_LAB_FPFH_L1
+#define FPFH_CFH_LAB_FPFH_L2
+
 //#define PFHRGB
 //#define SHOT
 //#define CSHOT
@@ -575,6 +606,8 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	}
 #endif // CFH_RGB_PFH_DOT
 
+//--------------------C---------------------------
+
 #ifdef CFH_RGB_FPFH_RATE
 	//5.计算特征的PR曲线（cfh_rgb_fpfh_rate）
 	//计算特征
@@ -725,6 +758,758 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	}
 #endif // CFH_RGB_FPFH_DOT
 
+#ifdef CFH_RGB_FPFH_L1
+	//5.计算特征的PR曲线（cfh_rgb_fpfh_L1）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh004_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh004_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh004_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh004;
+	ex_cfh004.computeCFH_RGB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh004_m_1);
+	ex_cfh004.computeCFH_RGB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh004_m_2);
+	ex_cfh004.computeCFH_RGB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh004_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh004_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh004_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh004_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh004_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh004_m += *cfh004_m_1;
+	*cfh004_m += *cfh004_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_RGB_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh004_m, cfh004_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_rgb_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_cfh_rgb_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_rgb_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_rgb_fpfh_L1_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_cfh_rgb_fpfh_L1_[i]:   " << matches_sum_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_L1_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- CFH_RGB_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_RGB_FPFH_L1
+
+#ifdef CFH_RGB_FPFH_L2
+	//5.计算特征的PR曲线（cfh_rgb_fpfh_L2）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh005_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh005_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh005_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh005;
+	ex_cfh005.computeCFH_RGB_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh005_m_1);
+	ex_cfh005.computeCFH_RGB_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh005_m_2);
+	ex_cfh005.computeCFH_RGB_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh005_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh005_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh005_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh005_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh005_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh005_m += *cfh005_m_1;
+	*cfh005_m += *cfh005_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_RGB_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh005_m, cfh005_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_rgb_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_cfh_rgb_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_rgb_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_rgb_fpfh_L2_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_cfh_rgb_fpfh_L2_[i]:   " << matches_sum_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_L2_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- CFH_RGB_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_RGB_FPFH_L2
+
+#ifdef CFH_HSV_FPFH_RATE
+	//5.计算特征的PR曲线（cfh_hsv_fpfh_rate）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh006_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh006_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh006_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh006;
+	ex_cfh006.computeCFH_HSV_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh006_m_1);
+	ex_cfh006.computeCFH_HSV_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh006_m_2);
+	ex_cfh006.computeCFH_HSV_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh006_s);
+	std::cout << "----------------------- Calculate CFH_HSV_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh006_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh006_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh006_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh006_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh006_m += *cfh006_m_1;
+	*cfh006_m += *cfh006_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_HSV_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh006_m, cfh006_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_hsv_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_cfh_hsv_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_hsv_fpfh_rate_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_hsv_fpfh_rate_[i]:   " << correct_matches_sum_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_cfh_hsv_fpfh_rate_[i]:   " << matches_sum_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_hsv_fpfh_rate_[i]:   " << corresponding_regions_sum_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- CFH_HSV_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_HSV_FPFH_RATE
+
+#ifdef CFH_HSV_FPFH_DOT
+	//5.计算特征的PR曲线（cfh_hsv_fpfh_dot）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh007_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh007_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh007_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh007;
+	ex_cfh007.computeCFH_HSV_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh007_m_1);
+	ex_cfh007.computeCFH_HSV_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh007_m_2);
+	ex_cfh007.computeCFH_HSV_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh007_s);
+	std::cout << "----------------------- Calculate CFH_HSV_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh007_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh007_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh007_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh007_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh007_m += *cfh007_m_1;
+	*cfh007_m += *cfh007_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_HSV_FPFH_DOT");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh007_m, cfh007_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_hsv_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_cfh_hsv_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_hsv_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_hsv_fpfh_dot_[i]:   " << correct_matches_sum_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_cfh_hsv_fpfh_dot_[i]:   " << matches_sum_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_hsv_fpfh_dot_[i]:   " << corresponding_regions_sum_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- CFH_HSV_FPFH_DOT ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_HSV_FPFH_DOT
+
+#ifdef CFH_HSV_FPFH_L1
+	//5.计算特征的PR曲线（cfh_hsv_fpfh_L1）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh008_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh008_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh008_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh008;
+	ex_cfh008.computeCFH_HSV_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh008_m_1);
+	ex_cfh008.computeCFH_HSV_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh008_m_2);
+	ex_cfh008.computeCFH_HSV_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh008_s);
+	std::cout << "----------------------- Calculate CFH_HSV_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh008_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh008_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh008_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh008_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh008_m += *cfh008_m_1;
+	*cfh008_m += *cfh008_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_HSV_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh008_m, cfh008_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_hsv_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_cfh_hsv_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_hsv_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_hsv_fpfh_L1_[i]:   " << correct_matches_sum_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_cfh_hsv_fpfh_L1_[i]:   " << matches_sum_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_hsv_fpfh_L1_[i]:   " << corresponding_regions_sum_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- CFH_HSV_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_HSV_FPFH_L1
+
+#ifdef CFH_HSV_FPFH_L2
+	//5.计算特征的PR曲线（cfh_hsv_fpfh_L2）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh009_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh009_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh009_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh009;
+	ex_cfh009.computeCFH_HSV_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh009_m_1);
+	ex_cfh009.computeCFH_HSV_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh009_m_2);
+	ex_cfh009.computeCFH_HSV_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh009_s);
+	std::cout << "----------------------- Calculate CFH_HSV_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh009_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh009_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh009_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh009_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh009_m += *cfh009_m_1;
+	*cfh009_m += *cfh009_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_HSV_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh009_m, cfh009_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_hsv_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_cfh_hsv_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_hsv_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_hsv_fpfh_L2_[i]:   " << correct_matches_sum_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_cfh_hsv_fpfh_L2_[i]:   " << matches_sum_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_hsv_fpfh_L2_[i]:   " << corresponding_regions_sum_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- CFH_HSV_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_HSV_FPFH_L2
+
+#ifdef CFH_LAB_FPFH_RATE
+	//5.计算特征的PR曲线（cfh_lab_fpfh_rate）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh010_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh010_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh010_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh010;
+	ex_cfh010.computeCFH_LAB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh010_m_1);
+	ex_cfh010.computeCFH_LAB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh010_m_2);
+	ex_cfh010.computeCFH_LAB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh010_s);
+	std::cout << "----------------------- Calculate CFH_LAB_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh010_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh010_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh010_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh010_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh010_m += *cfh010_m_1;
+	*cfh010_m += *cfh010_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_LAB_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh010_m, cfh010_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_lab_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_cfh_lab_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_lab_fpfh_rate_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_lab_fpfh_rate_[i]:   " << correct_matches_sum_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_cfh_lab_fpfh_rate_[i]:   " << matches_sum_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_lab_fpfh_rate_[i]:   " << corresponding_regions_sum_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- CFH_LAB_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_LAB_FPFH_RATE
+
+#ifdef CFH_LAB_FPFH_DOT
+	//5.计算特征的PR曲线（cfh_lab_fpfh_dot）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh011_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh011_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh011_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh011;
+	ex_cfh011.computeCFH_LAB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh011_m_1);
+	ex_cfh011.computeCFH_LAB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh011_m_2);
+	ex_cfh011.computeCFH_LAB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh011_s);
+	std::cout << "----------------------- Calculate CFH_LAB_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh011_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh011_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh011_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh011_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh011_m += *cfh011_m_1;
+	*cfh011_m += *cfh011_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_LAB_FPFH_DOT");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh011_m, cfh011_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_lab_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_cfh_lab_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_lab_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_lab_fpfh_dot_[i]:   " << correct_matches_sum_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_cfh_lab_fpfh_dot_[i]:   " << matches_sum_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_lab_fpfh_dot_[i]:   " << corresponding_regions_sum_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- CFH_LAB_FPFH_DOT ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_LAB_FPFH_DOT
+
+#ifdef CFH_LAB_FPFH_L1
+	//5.计算特征的PR曲线（cfh_lab_fpfh_L1）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh012_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh012_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh012_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh012;
+	ex_cfh012.computeCFH_LAB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh012_m_1);
+	ex_cfh012.computeCFH_LAB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh012_m_2);
+	ex_cfh012.computeCFH_LAB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh012_s);
+	std::cout << "----------------------- Calculate CFH_LAB_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh012_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh012_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh012_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh012_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh012_m += *cfh012_m_1;
+	*cfh012_m += *cfh012_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_LAB_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh012_m, cfh012_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_lab_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_cfh_lab_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_lab_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_lab_fpfh_L1_[i]:   " << correct_matches_sum_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_cfh_lab_fpfh_L1_[i]:   " << matches_sum_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_lab_fpfh_L1_[i]:   " << corresponding_regions_sum_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- CFH_LAB_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_LAB_FPFH_L1
+
+#ifdef CFH_LAB_FPFH_L2
+	//5.计算特征的PR曲线（cfh_lab_fpfh_L2）
+	//计算特征
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh013_m_1(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh013_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh013_s(new pcl::PointCloud<pcl::FPFHSignature33>());
+	FeatureExtractor ex_cfh013;
+	ex_cfh013.computeCFH_LAB_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh013_m_1);
+	ex_cfh013.computeCFH_LAB_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh013_m_2);
+	ex_cfh013.computeCFH_LAB_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh013_s);
+	std::cout << "----------------------- Calculate CFH_LAB_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh013_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh013_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh013_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::FPFHSignature33>::Ptr cfh013_m(new pcl::PointCloud<pcl::FPFHSignature33>());
+	*cfh013_m += *cfh013_m_1;
+	*cfh013_m += *cfh013_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_LAB_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh013_m, cfh013_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_lab_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_cfh_lab_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_lab_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_lab_fpfh_L2_[i]:   " << correct_matches_sum_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_cfh_lab_fpfh_L2_[i]:   " << matches_sum_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_lab_fpfh_L2_[i]:   " << corresponding_regions_sum_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- CFH_LAB_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_LAB_FPFH_L2
+
+//----------------------S+C-----------------------
+
 #ifdef FPFH_CFH_RGB_FPFH_RATE
 	//计算特征
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
@@ -734,7 +1519,7 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc002_m_1);
 	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc002_m_2);
 	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc002_s);
-	std::cout << "----------------------- Calculate CFH_RGB_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_RATE Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc002_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc002_m_2->size() << std::endl;
 	std::cout << "feature_s size: " << sc002_s->size() << std::endl;
@@ -798,6 +1583,820 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		std::cout << std::endl << std::endl << std::endl << std::endl;
 	}
 #endif // FPFH_CFH_RGB_FPFH_RATE
+
+#ifdef FPFH_CFH_RGB_FPFH_DOT
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc001_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc001_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc001_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc001;
+	ex_sc001.computeFPFH_CFH_RGB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc001_m_1);
+	ex_sc001.computeFPFH_CFH_RGB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc001_m_2);
+	ex_sc001.computeFPFH_CFH_RGB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc001_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc001_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc001_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc001_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc001_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc001_m += *sc001_m_1;
+	*sc001_m += *sc001_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_RGB_FPFH_DOT");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc001_m, sc001_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_rgb_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_rgb_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[i]:   " << correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_rgb_fpfh_dot_[i]:   " << matches_sum_fpfh_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_rgb_fpfh_dot_[i]:   " << corresponding_regions_sum_fpfh_cfh_rgb_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_RGB_FPFH_DOT ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_RGB_FPFH_DOT
+
+#ifdef FPFH_CFH_RGB_FPFH_L1
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc003_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc003_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc003_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc003;
+	ex_sc003.computeFPFH_CFH_RGB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc003_m_1);
+	ex_sc003.computeFPFH_CFH_RGB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc003_m_2);
+	ex_sc003.computeFPFH_CFH_RGB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc003_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc003_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc003_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc003_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc003_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc003_m += *sc003_m_1;
+	*sc003_m += *sc003_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_RGB_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc003_m, sc003_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_rgb_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[i]:   " << correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_rgb_fpfh_L1_[i]:   " << matches_sum_fpfh_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L1_[i]:   " << corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_RGB_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_RGB_FPFH_L1
+
+#ifdef FPFH_CFH_RGB_FPFH_L2
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc004;
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc004_m_1);
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc004_m_2);
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc004_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc004_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc004_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc004_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc004_m += *sc004_m_1;
+	*sc004_m += *sc004_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_RGB_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc004_m, sc004_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_rgb_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[i]:   " << correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_rgb_fpfh_L2_[i]:   " << matches_sum_fpfh_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[i]:   " << corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_RGB_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_RGB_FPFH_L2
+
+#ifdef FPFH_CFH_HSV_FPFH_RATE
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc005;
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc005_m_1);
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc005_m_2);
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc005_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_HSV_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc005_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc005_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc005_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc005_m += *sc005_m_1;
+	*sc005_m += *sc005_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_HSV_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc005_m, sc005_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_hsv_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_hsv_fpfh_rate_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[i]:   " << correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_hsv_fpfh_rate_[i]:   " << matches_sum_fpfh_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_hsv_fpfh_rate_[i]:   " << corresponding_regions_sum_fpfh_cfh_hsv_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_HSV_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_HSV_FPFH_RATE
+
+#ifdef FPFH_CFH_HSV_FPFH_DOT
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc006_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc006_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc006_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc006;
+	ex_sc006.computeFPFH_CFH_HSV_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc006_m_1);
+	ex_sc006.computeFPFH_CFH_HSV_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc006_m_2);
+	ex_sc006.computeFPFH_CFH_HSV_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc006_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_HSV_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc006_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc006_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc006_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc006_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc006_m += *sc006_m_1;
+	*sc006_m += *sc006_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_HSV_FPFH_DOT");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc006_m, sc006_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_hsv_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_hsv_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[i]:   " << correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_hsv_fpfh_dot_[i]:   " << matches_sum_fpfh_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_hsv_fpfh_dot_[i]:   " << corresponding_regions_sum_fpfh_cfh_hsv_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_HSV_FPFH_DOT ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_HSV_FPFH_DOT
+
+#ifdef FPFH_CFH_HSV_FPFH_L1
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc007_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc007_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc007_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc007;
+	ex_sc007.computeFPFH_CFH_HSV_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc007_m_1);
+	ex_sc007.computeFPFH_CFH_HSV_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc007_m_2);
+	ex_sc007.computeFPFH_CFH_HSV_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc007_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_HSV_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc007_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc007_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc007_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc007_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc007_m += *sc007_m_1;
+	*sc007_m += *sc007_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_HSV_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc007_m, sc007_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_hsv_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[i]:   " << correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_hsv_fpfh_L1_[i]:   " << matches_sum_fpfh_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L1_[i]:   " << corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_HSV_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_HSV_FPFH_L1
+
+#ifdef FPFH_CFH_HSV_FPFH_L2
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc008_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc008_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc008_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc008;
+	ex_sc008.computeFPFH_CFH_HSV_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc008_m_1);
+	ex_sc008.computeFPFH_CFH_HSV_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc008_m_2);
+	ex_sc008.computeFPFH_CFH_HSV_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc008_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_HSV_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc008_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc008_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc008_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc008_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc008_m += *sc008_m_1;
+	*sc008_m += *sc008_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_HSV_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc008_m, sc008_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_hsv_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[i]:   " << correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_hsv_fpfh_L2_[i]:   " << matches_sum_fpfh_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L2_[i]:   " << corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_HSV_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_HSV_FPFH_L2
+
+#ifdef FPFH_CFH_LAB_FPFH_RATE
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc009;
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc009_m_1);
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc009_m_2);
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc009_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_RATE Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc009_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc009_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc009_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc009_m += *sc009_m_1;
+	*sc009_m += *sc009_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_LAB_FPFH_RATE");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc009_m, sc009_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_lab_fpfh_rate_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_lab_fpfh_rate_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[i]:   " << correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_lab_fpfh_rate_[i]:   " << matches_sum_fpfh_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_lab_fpfh_rate_[i]:   " << corresponding_regions_sum_fpfh_cfh_lab_fpfh_rate_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_LAB_FPFH_RATE ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_LAB_FPFH_RATE
+
+#ifdef FPFH_CFH_LAB_FPFH_DOT
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc010;
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc010_m_1);
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc010_m_2);
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc010_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_DOT Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc010_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc010_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc010_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc010_m += *sc010_m_1;
+	*sc010_m += *sc010_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_LAB_FPFH_DOT");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc010_m, sc010_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_lab_fpfh_dot_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_lab_fpfh_dot_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[i]:   " << correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_lab_fpfh_dot_[i]:   " << matches_sum_fpfh_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_lab_fpfh_dot_[i]:   " << corresponding_regions_sum_fpfh_cfh_lab_fpfh_dot_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_LAB_FPFH_DOT ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_LAB_FPFH_DOT
+
+#ifdef FPFH_CFH_LAB_FPFH_L1
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc011;
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc011_m_1);
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc011_m_2);
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc011_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_L1 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc011_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc011_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc011_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc011_m += *sc011_m_1;
+	*sc011_m += *sc011_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_LAB_FPFH_L1");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc011_m, sc011_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_lab_fpfh_L1_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_lab_fpfh_L1_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[i]:   " << correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_lab_fpfh_L1_[i]:   " << matches_sum_fpfh_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_lab_fpfh_L1_[i]:   " << corresponding_regions_sum_fpfh_cfh_lab_fpfh_L1_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_LAB_FPFH_L1 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_LAB_FPFH_L1
+
+#ifdef FPFH_CFH_LAB_FPFH_L2
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc012_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc012_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc012_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc012;
+	ex_sc012.computeFPFH_CFH_LAB_FPFH_L2(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc012_m_1);
+	ex_sc012.computeFPFH_CFH_LAB_FPFH_L2(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc012_m_2);
+	ex_sc012.computeFPFH_CFH_LAB_FPFH_L2(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc012_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_L2 Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc012_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc012_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc012_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc012_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc012_m += *sc012_m_1;
+	*sc012_m += *sc012_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_LAB_FPFH_L2");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc012_m, sc012_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_lab_fpfh_L2_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_lab_fpfh_L2_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[i]:   " << correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_lab_fpfh_L2_[i]:   " << matches_sum_fpfh_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_lab_fpfh_L2_[i]:   " << corresponding_regions_sum_fpfh_cfh_lab_fpfh_L2_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_LAB_FPFH_L2 ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_LAB_FPFH_L2
 
 #ifdef PFHRGB
 

@@ -1,8 +1,7 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include <vector>
 #include "my_point_types.h"
-
 
 class Experiment
 {
@@ -36,6 +35,7 @@ public:
 	int corresponding_regions_sum_fpfh_[20] = {0};
 	
 	// -------------------for color---------------------- //
+
 	int correct_matches_sum_cfh_rgb_pfh_rate_[20] = {0};
 	int matches_sum_cfh_rgb_pfh_rate_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_pfh_rate_[20] = {0};
@@ -44,6 +44,7 @@ public:
 	int matches_sum_cfh_rgb_pfh_dot_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_pfh_dot_[20] = {0};
 	
+	// RGB
 	int correct_matches_sum_cfh_rgb_fpfh_rate_[20] = {0};
 	int matches_sum_cfh_rgb_fpfh_rate_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_fpfh_rate_[20] = {0};
@@ -51,11 +52,100 @@ public:
 	int correct_matches_sum_cfh_rgb_fpfh_dot_[20] = {0};
 	int matches_sum_cfh_rgb_fpfh_dot_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_fpfh_dot_[20] = {0};
+	
+	int correct_matches_sum_cfh_rgb_fpfh_L1_[20] = {0};
+	int matches_sum_cfh_rgb_fpfh_L1_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_fpfh_L1_[20] = {0};
+	
+	int correct_matches_sum_cfh_rgb_fpfh_L2_[20] = {0};
+	int matches_sum_cfh_rgb_fpfh_L2_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_fpfh_L2_[20] = {0};
+
+	// HSV
+	int correct_matches_sum_cfh_hsv_fpfh_rate_[20] = { 0 };
+	int matches_sum_cfh_hsv_fpfh_rate_[20] = { 0 };
+	int corresponding_regions_sum_cfh_hsv_fpfh_rate_[20] = { 0 };
+
+	int correct_matches_sum_cfh_hsv_fpfh_dot_[20] = { 0 };
+	int matches_sum_cfh_hsv_fpfh_dot_[20] = { 0 };
+	int corresponding_regions_sum_cfh_hsv_fpfh_dot_[20] = { 0 };
+
+	int correct_matches_sum_cfh_hsv_fpfh_L1_[20] = { 0 };
+	int matches_sum_cfh_hsv_fpfh_L1_[20] = { 0 };
+	int corresponding_regions_sum_cfh_hsv_fpfh_L1_[20] = { 0 };
+
+	int correct_matches_sum_cfh_hsv_fpfh_L2_[20] = { 0 };
+	int matches_sum_cfh_hsv_fpfh_L2_[20] = { 0 };
+	int corresponding_regions_sum_cfh_hsv_fpfh_L2_[20] = { 0 };
+
+	// LAB
+	int correct_matches_sum_cfh_lab_fpfh_rate_[20] = { 0 };
+	int matches_sum_cfh_lab_fpfh_rate_[20] = { 0 };
+	int corresponding_regions_sum_cfh_lab_fpfh_rate_[20] = { 0 };
+
+	int correct_matches_sum_cfh_lab_fpfh_dot_[20] = { 0 };
+	int matches_sum_cfh_lab_fpfh_dot_[20] = { 0 };
+	int corresponding_regions_sum_cfh_lab_fpfh_dot_[20] = { 0 };
+
+	int correct_matches_sum_cfh_lab_fpfh_L1_[20] = { 0 };
+	int matches_sum_cfh_lab_fpfh_L1_[20] = { 0 };
+	int corresponding_regions_sum_cfh_lab_fpfh_L1_[20] = { 0 };
+
+	int correct_matches_sum_cfh_lab_fpfh_L2_[20] = { 0 };
+	int matches_sum_cfh_lab_fpfh_L2_[20] = { 0 };
+	int corresponding_regions_sum_cfh_lab_fpfh_L2_[20] = { 0 };
 
 	// -------------------for s+c ----------------------- //
+	//RGB(S+C)
 	int correct_matches_sum_fpfh_cfh_rgb_fpfh_rate_[20] = {0};
 	int matches_sum_fpfh_cfh_rgb_fpfh_rate_[20] = {0};
 	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_rate_[20] = {0};
+	
+	int correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[20] = {0};
+	int matches_sum_fpfh_cfh_rgb_fpfh_dot_[20] = {0};
+	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_dot_[20] = {0};
+	
+	int correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[20] = {0};
+	int matches_sum_fpfh_cfh_rgb_fpfh_L1_[20] = {0};
+	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L1_[20] = {0};
+	
+	int correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
+	int matches_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
+	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
+
+	//HSV(S+C)
+	int correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[20] = { 0 };
+	int matches_sum_fpfh_cfh_hsv_fpfh_rate_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_hsv_fpfh_rate_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[20] = { 0 };
+	int matches_sum_fpfh_cfh_hsv_fpfh_dot_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_hsv_fpfh_dot_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[20] = { 0 };
+	int matches_sum_fpfh_cfh_hsv_fpfh_L1_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L1_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[20] = { 0 };
+	int matches_sum_fpfh_cfh_hsv_fpfh_L2_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L2_[20] = { 0 };
+
+	//LAB(S+C)
+	int correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[20] = { 0 };
+	int matches_sum_fpfh_cfh_lab_fpfh_rate_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_lab_fpfh_rate_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[20] = { 0 };
+	int matches_sum_fpfh_cfh_lab_fpfh_dot_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_lab_fpfh_dot_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[20] = { 0 };
+	int matches_sum_fpfh_cfh_lab_fpfh_L1_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_lab_fpfh_L1_[20] = { 0 };
+
+	int correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[20] = { 0 };
+	int matches_sum_fpfh_cfh_lab_fpfh_L2_[20] = { 0 };
+	int corresponding_regions_sum_fpfh_cfh_lab_fpfh_L2_[20] = { 0 };
 
 	// -------------------------------------------------- //
 

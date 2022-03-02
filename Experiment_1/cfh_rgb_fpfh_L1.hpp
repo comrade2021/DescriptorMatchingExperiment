@@ -1,6 +1,6 @@
-ï»¿#pragma once
+#pragma once
 
-#include "cfh_rgb_fpfh_dot.h"
+#include "cfh_rgb_fpfh_L1.h"
 
 #include <pcl/common/point_tests.h> // for pcl::isFinite
 #include <pcl/features/pfh_tools.h>
@@ -9,37 +9,45 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
-inline bool pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
+inline bool pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
 {
-    float r1 = cloud[p_idx].r / static_cast<float>(255) - 0.5;
-    float g1 = cloud[p_idx].g / static_cast<float>(255) - 0.5;
-    float b1 = cloud[p_idx].b / static_cast<float>(255) - 0.5;
-    float r2 = cloud[q_idx].r / static_cast<float>(255) - 0.5;
-    float g2 = cloud[q_idx].g / static_cast<float>(255) - 0.5;
-    float b2 = cloud[q_idx].b / static_cast<float>(255) - 0.5;
+    float r1 = static_cast<float>(cloud[p_idx].r);
+    float g1 = static_cast<float>(cloud[p_idx].g);
+    float b1 = static_cast<float>(cloud[p_idx].b);
+    float r2 = static_cast<float>(cloud[q_idx].r);
+    float g2 = static_cast<float>(cloud[q_idx].g);
+    float b2 = static_cast<float>(cloud[q_idx].b);
 
+    float L1 = abs(r1-r2) + abs(g1-g2) + abs(b1-b2);
+
+    float mdist = L1 / static_cast<float>(255 + 255 + 255);//·¶Î§£º0 - 1
+    if (mdist < 0)
+    {
+        f1 = 0;
+    }
+    if (mdist > 1.0)
+    {
+        f1 = 1.0;
+    }
+    
+    //µ÷ÓÃÒ»ÏÂcomputeRGBPairFeatures£¬·ÀÖ¹³öÏÖÎ´ÖªÒì³£
     Eigen::Vector4f colors1(r1, g1, b1, 0), colors2(r2, g2, b2, 0);
-    colors1.normalize();
-    colors2.normalize();
-
     computeRGBPairFeatures(colors1, colors2, f1);
+
+    f1 = mdist;
     return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
-inline bool pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
+inline bool pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
 {
-    f1 = colors1.dot(colors2);
-
-    if (f1 < (-1.0)) f1 = -1;
-    if (f1 > 1.0) f1 = 1;
     return (true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePointSPFHSignature(const pcl::PointCloud<PointInT>& cloud, pcl::index_t p_idx, int row, const pcl::Indices& indices, Eigen::MatrixXf& hist_f1)
+pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::computePointSPFHSignature(const pcl::PointCloud<PointInT>& cloud, pcl::index_t p_idx, int row, const pcl::Indices& indices, Eigen::MatrixXf& hist_f1)
 {
     Eigen::Vector4f pfh_tuple;
     // Get the number of bins from the histograms size
@@ -61,7 +69,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePointSPFH
             continue;
 
         // Normalize the f1, f2, f3 features and push them in the histogram
-        int h_index = static_cast<int> (std::floor(nr_bins_f1 * ((pfh_tuple[0] + 1.0) * 0.5)));
+        int h_index = static_cast<int> (std::floor(nr_bins_f1 * (pfh_tuple[0])));
         if (h_index < 0)           h_index = 0;
         if (h_index >= nr_bins_f1) h_index = nr_bins_f1 - 1;
         hist_f1(row, h_index) += hist_incr;
@@ -70,7 +78,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePointSPFH
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::weightPointSPFHSignature(
+pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::weightPointSPFHSignature(
     const Eigen::MatrixXf& hist_f1, const pcl::Indices& indices, const std::vector<float>& dists, Eigen::VectorXf& fpfh_histogram)
 {
     assert(indices.size() == dists.size());
@@ -119,7 +127,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::weightPointSPFHS
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeSPFHSignatures(std::vector<int>& spfh_hist_lookup,
+pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::computeSPFHSignatures(std::vector<int>& spfh_hist_lookup,
     Eigen::MatrixXf& hist_f1)
 {
     // Allocate enough space to hold the NN search results
@@ -127,7 +135,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeSPFHSigna
     pcl::Indices nn_indices(k_);
     std::vector<float> nn_dists(k_);
 
-    std::set<int> spfh_indices;// é›†åˆï¼Œç”¨æ¥å­˜å‚¨æ‰€æœ‰éœ€è¦è®¡ç®—spfhçš„ç‚¹çš„ç´¢å¼•
+    std::set<int> spfh_indices;// ¼¯ºÏ£¬ÓÃÀ´´æ´¢ËùÓĞĞèÒª¼ÆËãspfhµÄµãµÄË÷Òı
     spfh_hist_lookup.resize(surface_->size());
 
     // Build a list of (unique) indices for which we will need to compute SPFH signatures
@@ -151,7 +159,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeSPFHSigna
     }
 
     // Initialize the arrays that will store the SPFH signatures
-    // å‡†å¤‡ç©ºé—´ï¼Œå­˜æ”¾è®¡ç®—çš„spfhç‰¹å¾ç›´æ–¹å›¾
+    // ×¼±¸¿Õ¼ä£¬´æ·Å¼ÆËãµÄspfhÌØÕ÷Ö±·½Í¼
     std::size_t data_size = spfh_indices.size();
     hist_f1.setZero(data_size, nr_bins_f1_);
 
@@ -167,7 +175,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeSPFHSigna
         computePointSPFHSignature(*surface_, p_idx, i, nn_indices, hist_f1);
 
         // Populate a lookup table for converting a point index to its corresponding row in the spfh_hist_* matrices
-        // å°†æ‰€æœ‰è®¡ç®—äº†spfhçš„ç‚¹çš„ç‚¹äº‘ç´¢å¼•å’Œå­˜æ”¾æ‰€æœ‰spfhçš„hist_f1å¯¹åº”ï¼Œç”¨äºæŸ¥æ‰¾æŸç‚¹çš„spfh
+        // ½«ËùÓĞ¼ÆËãÁËspfhµÄµãµÄµãÔÆË÷ÒıºÍ´æ·ÅËùÓĞspfhµÄhist_f1¶ÔÓ¦£¬ÓÃÓÚ²éÕÒÄ³µãµÄspfh
         spfh_hist_lookup[p_idx] = i;
         i++;
     }
@@ -175,7 +183,7 @@ pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeSPFHSigna
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_RGB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeFeature(PointCloudOut& output)
+pcl::CFH_Estimation_RGB_FPFH_L1<PointInT, PointNT, PointOutT>::computeFeature(PointCloudOut& output)
 {
     // Allocate enough space to hold the NN search results
     // \note This resize is irrelevant for a radiusSearch ().

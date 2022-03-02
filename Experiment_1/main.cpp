@@ -127,7 +127,8 @@ main() {
 	std::vector<double> sum_recall(NUM_ALPHA * NUM_OF_DESCRIPTOR_TESTED);
 
 	//std::vector<std::string> features_name = { "CFH_RGB_PFH_RATE","CFH_RGB_PFH_DOT"};
-	std::vector<std::string> features_name = {"FPFH_CFH_RGB_FPFH_DOT"};
+	std::vector<std::string> features_name = {"FPFH_CFH_LAB_FPFH_L2"};
+
 	/*
 	测试新的特征时，注意：
 
@@ -140,6 +141,8 @@ main() {
 	4. experiment.h、main()、experiment.cpp 的 matches_sum_cfh_rgb_pfh_rate_等内容，须一致,顺序必须保持一致。
 
 	5. 由于feature_extractor中的match等方法参数已有重载，因此对于新特征，只需要写一个计算方法就行。
+
+	6. feature_extractor.cpp处需要引用hpp而非h，否则出现无法解析的错误
 	*/
 
 	std::vector<double> precision;
@@ -333,22 +336,22 @@ main() {
 	//	vector_r.push_back(r);
 	//}
 
-	//CFH_RGB_FPFH_DOT  ! 如果不是正在测试的特征，请将此处注释
-	for (size_t i = 0; i < 20; i++)
-	{
-		if (exp.matches_sum_cfh_rgb_fpfh_dot_[i] == 0)
-		{
-			p = 1;
-			r = 0;
-		}
-		else
-		{
-			p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.matches_sum_cfh_rgb_fpfh_dot_[i];
-			r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_dot_[i];
-		}
-		vector_p.push_back(p);
-		vector_r.push_back(r);
-	}
+	////CFH_RGB_FPFH_DOT  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_rgb_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.matches_sum_cfh_rgb_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_dot_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
 
 	////CFH_RGB_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
@@ -367,6 +370,195 @@ main() {
 	//	vector_r.push_back(r);
 	//}
 
+	////CFH_RGB_FPFH_L1  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_rgb_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_L1_[i]) / exp.matches_sum_cfh_rgb_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_L1_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+	 
+	////CFH_RGB_FPFH_L2  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_rgb_fpfh_L2_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_L2_[i]) / exp.matches_sum_cfh_rgb_fpfh_L2_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_rgb_fpfh_L2_[i]) / exp.corresponding_regions_sum_cfh_rgb_fpfh_L2_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_HSV_FPFH_DOT  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_hsv_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_dot_[i]) / exp.matches_sum_cfh_hsv_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_dot_[i]) / exp.corresponding_regions_sum_cfh_hsv_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_HSV_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_hsv_fpfh_rate_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_rate_[i]) / exp.matches_sum_cfh_hsv_fpfh_rate_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_rate_[i]) / exp.corresponding_regions_sum_cfh_hsv_fpfh_rate_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_HSV_FPFH_L1  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_hsv_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_L1_[i]) / exp.matches_sum_cfh_hsv_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_L1_[i]) / exp.corresponding_regions_sum_cfh_hsv_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_HSV_FPFH_L2  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_hsv_fpfh_L2_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_L2_[i]) / exp.matches_sum_cfh_hsv_fpfh_L2_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_hsv_fpfh_L2_[i]) / exp.corresponding_regions_sum_cfh_hsv_fpfh_L2_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_LAB_FPFH_DOT  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_lab_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_dot_[i]) / exp.matches_sum_cfh_lab_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_dot_[i]) / exp.corresponding_regions_sum_cfh_lab_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_LAB_FPFH_RATE  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_lab_fpfh_rate_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_rate_[i]) / exp.matches_sum_cfh_lab_fpfh_rate_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_rate_[i]) / exp.corresponding_regions_sum_cfh_lab_fpfh_rate_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_LAB_FPFH_L1  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_lab_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_L1_[i]) / exp.matches_sum_cfh_lab_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_L1_[i]) / exp.corresponding_regions_sum_cfh_lab_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////CFH_LAB_FPFH_L2  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_cfh_lab_fpfh_L2_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_L2_[i]) / exp.matches_sum_cfh_lab_fpfh_L2_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_cfh_lab_fpfh_L2_[i]) / exp.corresponding_regions_sum_cfh_lab_fpfh_L2_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	//----------------------S+C-----------------------------
+
+	////fpfh_cfh_rgb_fpfh_dot-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_rgb_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[i]) / exp.matches_sum_fpfh_cfh_rgb_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_dot_[i]) / exp.corresponding_regions_sum_fpfh_cfh_rgb_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+	 
 	////fpfh_cfh_rgb_fpfh_rate-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)
 	//{
@@ -383,6 +575,176 @@ main() {
 	//	vector_p.push_back(p);
 	//	vector_r.push_back(r);
 	//}
+
+	////fpfh_cfh_rgb_fpfh_L1-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_rgb_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[i]) / exp.matches_sum_fpfh_cfh_rgb_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_L1_[i]) / exp.corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+	
+	////fpfh_cfh_rgb_fpfh_L2-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_rgb_fpfh_L2_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[i]) / exp.matches_sum_fpfh_cfh_rgb_fpfh_L2_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[i]) / exp.corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////fpfh_cfh_hsv_fpfh_dot-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_hsv_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[i]) / exp.matches_sum_fpfh_cfh_hsv_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_dot_[i]) / exp.corresponding_regions_sum_fpfh_cfh_hsv_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////fpfh_cfh_hsv_fpfh_rate-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_hsv_fpfh_rate_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[i]) / exp.matches_sum_fpfh_cfh_hsv_fpfh_rate_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[i]) / exp.corresponding_regions_sum_fpfh_cfh_hsv_fpfh_rate_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////fpfh_cfh_hsv_fpfh_L1-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_hsv_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[i]) / exp.matches_sum_fpfh_cfh_hsv_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_L1_[i]) / exp.corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////fpfh_cfh_hsv_fpfh_L2-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_hsv_fpfh_L2_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[i]) / exp.matches_sum_fpfh_cfh_hsv_fpfh_L2_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_hsv_fpfh_L2_[i]) / exp.corresponding_regions_sum_fpfh_cfh_hsv_fpfh_L2_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	////fpfh_cfh_lab_fpfh_dot-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_lab_fpfh_dot_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[i]) / exp.matches_sum_fpfh_cfh_lab_fpfh_dot_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_dot_[i]) / exp.corresponding_regions_sum_fpfh_cfh_lab_fpfh_dot_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	//fpfh_cfh_lab_fpfh_rate-pr  ! 如果不是正在测试的特征，请将此处注释
+	/*for (size_t i = 0; i < 20; i++)
+	{
+		if (exp.matches_sum_fpfh_cfh_lab_fpfh_rate_[i] == 0)
+		{
+			p = 1;
+			r = 0;
+		}
+		else
+		{
+			p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[i]) / exp.matches_sum_fpfh_cfh_lab_fpfh_rate_[i];
+			r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_rate_[i]) / exp.corresponding_regions_sum_fpfh_cfh_lab_fpfh_rate_[i];
+		}
+		vector_p.push_back(p);
+		vector_r.push_back(r);
+	}*/
+
+	////fpfh_cfh_lab_fpfh_L1-pr  ! 如果不是正在测试的特征，请将此处注释
+	//for (size_t i = 0; i < 20; i++)
+	//{
+	//	if (exp.matches_sum_fpfh_cfh_lab_fpfh_L1_[i] == 0)
+	//	{
+	//		p = 1;
+	//		r = 0;
+	//	}
+	//	else
+	//	{
+	//		p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[i]) / exp.matches_sum_fpfh_cfh_lab_fpfh_L1_[i];
+	//		r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_L1_[i]) / exp.corresponding_regions_sum_fpfh_cfh_lab_fpfh_L1_[i];
+	//	}
+	//	vector_p.push_back(p);
+	//	vector_r.push_back(r);
+	//}
+
+	//fpfh_cfh_lab_fpfh_L2-pr  ! 如果不是正在测试的特征，请将此处注释
+	for (size_t i = 0; i < 20; i++)
+	{
+		if (exp.matches_sum_fpfh_cfh_lab_fpfh_L2_[i] == 0)
+		{
+			p = 1;
+			r = 0;
+		}
+		else
+		{
+			p = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[i]) / exp.matches_sum_fpfh_cfh_lab_fpfh_L2_[i];
+			r = static_cast<double>(exp.correct_matches_sum_fpfh_cfh_lab_fpfh_L2_[i]) / exp.corresponding_regions_sum_fpfh_cfh_lab_fpfh_L2_[i];
+		}
+		vector_p.push_back(p);
+		vector_r.push_back(r);
+	}
 	
 	////pfhrgb-pr  ! 如果不是正在测试的特征，请将此处注释
 	//for (size_t i = 0; i < 20; i++)

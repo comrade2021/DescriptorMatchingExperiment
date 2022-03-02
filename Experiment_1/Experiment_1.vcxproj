@@ -168,7 +168,27 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cfh.h" />
+    <ClInclude Include="cfh_hsv_fpfh_dot.h" />
+    <ClInclude Include="cfh_hsv_fpfh_dot.hpp" />
+    <ClInclude Include="cfh_hsv_fpfh_L1.h" />
+    <ClInclude Include="cfh_hsv_fpfh_L1.hpp" />
+    <ClInclude Include="cfh_hsv_fpfh_L2.h" />
+    <ClInclude Include="cfh_hsv_fpfh_L2.hpp" />
+    <ClInclude Include="cfh_hsv_fpfh_rate.h" />
+    <ClInclude Include="cfh_hsv_fpfh_rate.hpp" />
+    <ClInclude Include="cfh_lab_fpfh_dot.h" />
+    <ClInclude Include="cfh_lab_fpfh_dot.hpp" />
+    <ClInclude Include="cfh_lab_fpfh_L1.h" />
+    <ClInclude Include="cfh_lab_fpfh_L1.hpp" />
+    <ClInclude Include="cfh_lab_fpfh_L2.h" />
+    <ClInclude Include="cfh_lab_fpfh_L2.hpp" />
+    <ClInclude Include="cfh_lab_fpfh_rate.h" />
+    <ClInclude Include="cfh_lab_fpfh_rate.hpp" />
     <ClInclude Include="cfh_rgb.h" />
+    <ClInclude Include="cfh_rgb_fpfh_L1.h" />
+    <ClInclude Include="cfh_rgb_fpfh_L1.hpp" />
+    <ClInclude Include="cfh_rgb_fpfh_L2.h" />
+    <ClInclude Include="cfh_rgb_fpfh_L2.hpp" />
     <ClInclude Include="cfh_rgb_pfh_dot.h" />
     <ClInclude Include="cfh_rgb_fpfh_dot.h" />
     <ClInclude Include="cfh_rgb_fpfh_dot.hpp" />
