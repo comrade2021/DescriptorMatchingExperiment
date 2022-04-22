@@ -119,3 +119,14 @@ void MyNormalEstimation::computeNormal(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cl
 		}
 	}
 }
+
+void MyNormalEstimation::computeNormal_K(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, int radius, pcl::PointCloud<pcl::Normal>::Ptr normal)
+{
+	pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;//创建法线估计类
+	ne.setNumberOfThreads(NumberOfThreads);//设置使用的线程数量（cpu核心数量）
+	ne.setInputCloud(cloud);
+	pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>());//使用kd树进行近邻搜索
+	ne.setSearchMethod(tree);
+	ne.setKSearch(radius);
+	ne.compute(*normal);
+}

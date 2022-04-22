@@ -23,7 +23,8 @@
 //#define CFH_RGB_FPFH_DOT
 //#define CFH_RGB_FPFH_L1
 //#define CFH_RGB_FPFH_L2
- 
+//#define CFH_RGB_FPFH_NEW
+
 //#define CFH_HSV_FPFH_RATE
 //#define CFH_HSV_FPFH_DOT
 //#define CFH_HSV_FPFH_L1
@@ -40,23 +41,24 @@
 //#define FPFH_CFH_RGB_FPFH_DOT
 //#define FPFH_CFH_RGB_FPFH_L1
 //#define FPFH_CFH_RGB_FPFH_L2
+//#define FPFH_CFH_RGB_FPFH_NEW
 
-//#define FPFH_CFH_HSV_FPFH_RATE
-//#define FPFH_CFH_HSV_FPFH_DOT
+#define FPFH_CFH_HSV_FPFH_RATE
+#define FPFH_CFH_HSV_FPFH_DOT
 //#define FPFH_CFH_HSV_FPFH_L1
 //#define FPFH_CFH_HSV_FPFH_L2
 
-//#define FPFH_CFH_LAB_FPFH_RATE
-//#define FPFH_CFH_LAB_FPFH_DOT
-//#define FPFH_CFH_LAB_FPFH_L1
+#define FPFH_CFH_LAB_FPFH_RATE
+#define FPFH_CFH_LAB_FPFH_DOT//LAB+CIE2000的直方图+33
+#define FPFH_CFH_LAB_FPFH_L1
 #define FPFH_CFH_LAB_FPFH_L2
 
 //#define PFHRGB
 //#define SHOT
 //#define CSHOT
 
-//#define CSHOT_KEY
-#define VOXEL_KEY
+#define CSHOT_KEY
+//#define VOXEL_KEY
 
 void Experiment::perform(std::vector<double>& precision, std::vector<double>& recall)
 {
@@ -149,9 +151,11 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	std::cout << "========================================= Calculate the PR value once =========================================" << std::endl;
 	std::cout << "model:2   scene:1 " << std::endl;
 	//参数
-	int num_key_m_1 = 10;//关键点数量
-	int num_key_m_2 = 10;
-	int num_key_s = 30;
+	int num_key_m_1 = 100;//关键点数量
+	int num_key_m_2 = 100;
+	int num_key_s = 300;
+	int noi = 100;
+
 	double mr_s = 0;//网格分辨率
 	double mr_1 = 0;
 	double mr_2 = 0;
@@ -162,7 +166,7 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	double radius_feature_m_2 = 0.0;
 	double radius_feature_s = 0.0;
 	double beta_threshold = 0.0;
-	size_t alpha_devide = 20;
+	size_t alpha_devide = 20;//每条PR曲线的点数
 	std::cout << "num_key_m: " << num_key_m_1 << std::endl;
 	std::cout << "num_key_s: " << num_key_s << std::endl;
 
@@ -215,22 +219,23 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	std::cout << "mr_2: " << mr_2 << std::endl;
 	std::cout << "scene density: " << res_scene << std::endl;
 
+	// !!!------------TESTING------------!!!!!!!!!!
 	//设置参数(与分辨率相关)
 	normal_radius_s = 4 * mr_s;//法线的计算半径
 	normal_radius_m_1 = 4 * mr_1;
 	normal_radius_m_2 = 4 * mr_1;
-	radius_feature_m_1 = 15 * mr_s;//特征的计算半径
-	radius_feature_m_2 = 15 * mr_s;
-	radius_feature_s = 15 * mr_s;
+	radius_feature_m_1 = 30 * mr_s;//特征的计算半径//10,15,20//4,6,8,10
+	radius_feature_m_2 = 30 * mr_s;
+	radius_feature_s = 30 * mr_s;
 	beta_threshold = 10 * res_scene;//距离阈值
 	std::cout << "--------------------- Initialize Parameters ----------------------" << std::endl;
-	std::cout << "normal_radius_s = 4 * mr_s: " << normal_radius_s << std::endl;
-	std::cout << "normal_radius_m_1 = 4 * mr_1: " << normal_radius_m_1 << std::endl;
-	std::cout << "normal_radius_m_2 = 4 * mr_1: " << normal_radius_m_2 << std::endl;
-	std::cout << "radius_feature_s = 15 * mr_s: " << radius_feature_s << std::endl;
-	std::cout << "radius_feature_m_1 = 15 * mr_s: " << radius_feature_m_1 << std::endl;
-	std::cout << "radius_feature_m_2 = 15 * mr_s: " << radius_feature_m_2 << std::endl;
-	std::cout << "beta_threshold = 4 * res_scene: " << beta_threshold << std::endl;
+	std::cout << "normal_radius_s : " << normal_radius_s << std::endl;
+	std::cout << "normal_radius_m_1 = : " << normal_radius_m_1 << std::endl;
+	std::cout << "normal_radius_m_2 = : " << normal_radius_m_2 << std::endl;
+	std::cout << "radius_feature_s = : " << radius_feature_s << std::endl;
+	std::cout << "radius_feature_m_1 = : " << radius_feature_m_1 << std::endl;
+	std::cout << "radius_feature_m_2 = : " << radius_feature_m_2 << std::endl;
+	std::cout << "beta_threshold = 10 * res_scene: " << beta_threshold << std::endl;
 
 #ifdef CSHOT_KEY
 	//3.提取关键点（随机采样）（使用变换矩阵，含有真实对应，与CSHOT论文相同）
@@ -247,7 +252,7 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	*keypoints_m += *keypoints_m_2;
 	*keypoints_s += *keypoints_s_1;//keypoints_s内容[<=1000关键点(对应一)，<=1000关键点(对应二)，>=1000干扰点]
 	*keypoints_s += *keypoints_s_2;
-	int noi = num_key_s - (keypoints_s->size());
+	//int noi = num_key_s - (keypoints_s->size());
 	key_detector.addNoisePoints(cloud_scene, keypoints_s, noi);//!注意：虽然真实对应数量在变化，但几种描述子在一次场景实验中使用的关键点是完全相同的，结果依然是公平的。
 	std::cout << "----------------------- Sampling Keypoints Test -----------------------" << std::endl;
 	std::cout << "keypoints_s corr_regions/noise : " <<keypoints_s->size()- noi <<"/" << noi << std::endl;
@@ -285,9 +290,12 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::Normal>::Ptr normal_m_1(new pcl::PointCloud<pcl::Normal>);
 	pcl::PointCloud<pcl::Normal>::Ptr normal_m_2(new pcl::PointCloud<pcl::Normal>);
 	pcl::PointCloud<pcl::Normal>::Ptr normal_s(new pcl::PointCloud<pcl::Normal>);
-	ne.computeNormal(cloud_model_1, normal_radius_m_1, normal_m_1);
+	/*ne.computeNormal(cloud_model_1, normal_radius_m_1, normal_m_1);
 	ne.computeNormal(cloud_model_2, normal_radius_m_2, normal_m_2);
-	ne.computeNormal(cloud_scene, normal_radius_s, normal_s);
+	ne.computeNormal(cloud_scene, normal_radius_s, normal_s);*/
+	ne.computeNormal_K(cloud_model_1, 12, normal_m_1);
+	ne.computeNormal_K(cloud_model_2, 12, normal_m_2);
+	ne.computeNormal_K(cloud_scene, 12, normal_s);
 	std::cout << "----------------------- Calculate Normals ------------------------" << std::endl;
 	std::cout << "normal_m_1 size: " << normal_m_1->size() << std::endl;
 	std::cout << "normal_m_2 size: " << normal_m_2->size() << std::endl;
@@ -388,9 +396,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_m_2(new pcl::PointCloud<pcl::FPFHSignature33>());
 	pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfh_s(new pcl::PointCloud<pcl::FPFHSignature33>());
 	FeatureExtractor ex_fpfh;
-	ex_fpfh.computeFPFH(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, fpfh_m_1);
-	ex_fpfh.computeFPFH(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, fpfh_m_2);
-	ex_fpfh.computeFPFH(cloud_scene, keypoints_s, normal_s, radius_feature_s, fpfh_s);
+	ex_fpfh.computeFPFH(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1/2.0, fpfh_m_1);
+	ex_fpfh.computeFPFH(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, fpfh_m_2);
+	ex_fpfh.computeFPFH(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, fpfh_s);
 	std::cout << "----------------------- Calculate FPFH Features ------------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << fpfh_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << fpfh_m_2->size() << std::endl;
@@ -907,6 +915,81 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 		std::cout << std::endl << std::endl << std::endl << std::endl;
 	}
 #endif // CFH_RGB_FPFH_L2
+
+#ifdef CFH_RGB_FPFH_NEW
+	//5.计算特征的PR曲线（cfh_rgb_fpfh_new）
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr cfh005_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr cfh005_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr cfh005_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_cfh005;
+	ex_cfh005.computeCFH_RGB_FPFH_NEW(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, cfh005_m_1);
+	ex_cfh005.computeCFH_RGB_FPFH_NEW(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, cfh005_m_2);
+	ex_cfh005.computeCFH_RGB_FPFH_NEW(cloud_scene, keypoints_s, normal_s, radius_feature_s, cfh005_s);
+	std::cout << "----------------------- Calculate CFH_RGB_FPFH_NEW Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << cfh005_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << cfh005_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << cfh005_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr cfh005_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*cfh005_m += *cfh005_m_1;
+	*cfh005_m += *cfh005_m_2;
+	//计算PR曲线
+	features_name.push_back("CFH_RGB_FPFH_NEW");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(cfh005_m, cfh005_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_cfh_rgb_fpfh_new_[i] += correct_matches->size();
+		matches_sum_cfh_rgb_fpfh_new_[i] += corrs_match->size();
+		corresponding_regions_sum_cfh_rgb_fpfh_new_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_cfh_rgb_fpfh_new_[i]:   " << correct_matches_sum_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "matches_sum_cfh_rgb_fpfh_new_[i]:   " << matches_sum_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_cfh_rgb_fpfh_new_[i]:   " << corresponding_regions_sum_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "------------------------------- CFH_RGB_FPFH_NEW ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // CFH_RGB_FPFH_NEW
 
 #ifdef CFH_HSV_FPFH_RATE
 	//5.计算特征的PR曲线（cfh_hsv_fpfh_rate）
@@ -1516,9 +1599,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc002_s(new pcl::PointCloud<pcl::PFHSignature125>());
 	FeatureExtractor ex_sc002;
-	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc002_m_1);
-	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc002_m_2);
-	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc002_s);
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1/2.0, sc002_m_1);
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, sc002_m_2);
+	ex_sc002.computeFPFH_CFH_RGB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, sc002_s);
 	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_RATE Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc002_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc002_m_2->size() << std::endl;
@@ -1806,15 +1889,89 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	}
 #endif // FPFH_CFH_RGB_FPFH_L2
 
+#ifdef FPFH_CFH_RGB_FPFH_NEW
+	//计算特征
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_s(new pcl::PointCloud<pcl::PFHSignature125>());
+	FeatureExtractor ex_sc004;
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_NEW(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc004_m_1);
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_NEW(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc004_m_2);
+	ex_sc004.computeFPFH_CFH_RGB_FPFH_NEW(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc004_s);
+	std::cout << "----------------------- Calculate FPFH_CFH_RGB_FPFH_NEW Features -----------------------" << std::endl;
+	std::cout << "feature_m_1 size: " << sc004_m_1->size() << std::endl;
+	std::cout << "feature_m_2 size: " << sc004_m_2->size() << std::endl;
+	std::cout << "feature_s size: " << sc004_s->size() << std::endl;
+	//拼接特征（CFH）
+	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc004_m(new pcl::PointCloud<pcl::PFHSignature125>());
+	*sc004_m += *sc004_m_1;
+	*sc004_m += *sc004_m_2;
+	//计算PR曲线
+	features_name.push_back("FPFH_CFH_RGB_FPFH_NEW");
+	for (size_t i = 0; i <= alpha_devide - 1; i++)
+	{
+		// 匹配：corrs_match
+		pcl::CorrespondencesPtr corrs_match(new pcl::Correspondences());//特征匹配结果,<index_query:场景特征,index_match:匹配到的模型特征,distence:特征间欧式距离>
+		double threshold_alpha = alpha_upper_limit * (i / static_cast<double>(alpha_devide - 1));//匹配时的alpha阈值
+		FeatureMatch matcher;
+		matcher.match_r(sc004_m, sc004_s, corrs_match, threshold_alpha);
+		// 验证：correct matches
+		pcl::CorrespondencesPtr correct_matches(new pcl::Correspondences());
+		Validator va;
+		va.findCorrectMatches(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, corrs_match, correct_matches);
+		// 验证：correspondences(possible correct matches)
+		pcl::CorrespondencesPtr all_correspondences(new pcl::Correspondences());
+		va.findALLCorrespondences(keypoints_m_1, ground_truth_1, keypoints_m_2, ground_truth_2, keypoints_s, beta_threshold, all_correspondences);
+		// 计算当前阈值下的PR值
+		double p;
+		double r;
+		if ((corrs_match->size()) == 0)
+		{
+			p = 1;
+			r = 0;
+			std::cout << "########warning!#########  ##corrs_match->size()==0" << std::endl;
+		}
+		else
+		{
+			p = (static_cast<double>(correct_matches->size())) / static_cast<double>((corrs_match->size()));
+			r = (static_cast<double>(correct_matches->size())) / static_cast<double>((all_correspondences->size()));
+		}
+		if ((all_correspondences->size()) == 0)
+		{
+			PCL_ERROR("########warning!#########  ##all_correspondences->size()==0");
+		}
+		precision.push_back(p);
+		recall.push_back(r);
+		correct_matches_sum_fpfh_cfh_rgb_fpfh_new_[i] += correct_matches->size();
+		matches_sum_fpfh_cfh_rgb_fpfh_new_[i] += corrs_match->size();
+		corresponding_regions_sum_fpfh_cfh_rgb_fpfh_new_[i] += all_correspondences->size();
+		std::cout << "correct_matches_sum_fpfh_cfh_rgb_fpfh_new_[i]:   " << correct_matches_sum_fpfh_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "matches_sum_fpfh_cfh_rgb_fpfh_new_[i]:   " << matches_sum_fpfh_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "corresponding_regions_sum_fpfh_cfh_rgb_fpfh_new_[i]:   " << corresponding_regions_sum_fpfh_cfh_rgb_fpfh_new_[i] << std::endl;
+		std::cout << "------------------------------- FPFH_CFH_RGB_FPFH_NEW ------------------------------" << std::endl;
+		std::cout << "----------------------------- Matching -----------------------------" << std::endl;
+		std::cout << "all_match / keypoints_s: " << corrs_match->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "---------------------------- verifying -----------------------------" << std::endl;
+		std::cout << "correct_matches / all_match: " << correct_matches->size() << "/" << corrs_match->size() << std::endl;
+		std::cout << "all_correspondences / keypoints_s: " << all_correspondences->size() << "/" << keypoints_s->size() << std::endl;
+		std::cout << "--------------------------- Calculate PR ---------------------------" << std::endl;
+		std::cout << "threshold of feature matching: " << threshold_alpha << std::endl;
+		std::cout << "threshold of verified: " << beta_threshold << std::endl;
+		std::cout << "precision: " << p << std::endl;
+		std::cout << "recall: " << r << std::endl;
+		std::cout << std::endl << std::endl << std::endl << std::endl;
+	}
+#endif // FPFH_CFH_RGB_FPFH_NEW
+
 #ifdef FPFH_CFH_HSV_FPFH_RATE
 	//计算特征
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_m_1(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc005_s(new pcl::PointCloud<pcl::PFHSignature125>());
 	FeatureExtractor ex_sc005;
-	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc005_m_1);
-	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc005_m_2);
-	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc005_s);
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1 / 2.0, sc005_m_1);
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, sc005_m_2);
+	ex_sc005.computeFPFH_CFH_HSV_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, sc005_s);
 	std::cout << "----------------------- Calculate FPFH_CFH_HSV_FPFH_RATE Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc005_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc005_m_2->size() << std::endl;
@@ -2108,9 +2265,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc009_s(new pcl::PointCloud<pcl::PFHSignature125>());
 	FeatureExtractor ex_sc009;
-	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc009_m_1);
-	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc009_m_2);
-	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc009_s);
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1 / 2.0, sc009_m_1);
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, sc009_m_2);
+	ex_sc009.computeFPFH_CFH_LAB_FPFH_RATE(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, sc009_s);
 	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_RATE Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc009_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc009_m_2->size() << std::endl;
@@ -2182,9 +2339,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc010_s(new pcl::PointCloud<pcl::PFHSignature125>());
 	FeatureExtractor ex_sc010;
-	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc010_m_1);
-	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc010_m_2);
-	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc010_s);
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1/2.0, sc010_m_1);
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, sc010_m_2);
+	ex_sc010.computeFPFH_CFH_LAB_FPFH_DOT(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, sc010_s);
 	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_DOT Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc010_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc010_m_2->size() << std::endl;
@@ -2256,9 +2413,9 @@ void Experiment::computeALLPR_2(double alpha_upper_limit, std::vector<double>& p
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_m_2(new pcl::PointCloud<pcl::PFHSignature125>());
 	pcl::PointCloud<pcl::PFHSignature125>::Ptr sc011_s(new pcl::PointCloud<pcl::PFHSignature125>());
 	FeatureExtractor ex_sc011;
-	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1, sc011_m_1);
-	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2, sc011_m_2);
-	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s, sc011_s);
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_1, keypoints_m_1, normal_m_1, radius_feature_m_1 / 2.0, sc011_m_1);
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_model_2, keypoints_m_2, normal_m_2, radius_feature_m_2 / 2.0, sc011_m_2);
+	ex_sc011.computeFPFH_CFH_LAB_FPFH_L1(cloud_scene, keypoints_s, normal_s, radius_feature_s / 2.0, sc011_s);
 	std::cout << "----------------------- Calculate FPFH_CFH_LAB_FPFH_L1 Features -----------------------" << std::endl;
 	std::cout << "feature_m_1 size: " << sc011_m_1->size() << std::endl;
 	std::cout << "feature_m_2 size: " << sc011_m_2->size() << std::endl;

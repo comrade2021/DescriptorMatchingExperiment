@@ -84,7 +84,7 @@ public:
 		pcl::CorrespondencesPtr corr,
 		double threshold);
 
-private:
+public:
 	//根据最近邻和次近邻比值完成特征匹配（NNDR方式）
 	void filterNN(
 		pcl::CorrespondencesPtr model_scene_corrs_n1,

@@ -60,6 +60,10 @@ public:
 	int correct_matches_sum_cfh_rgb_fpfh_L2_[20] = {0};
 	int matches_sum_cfh_rgb_fpfh_L2_[20] = {0};
 	int corresponding_regions_sum_cfh_rgb_fpfh_L2_[20] = {0};
+	
+	int correct_matches_sum_cfh_rgb_fpfh_new_[20] = {0};
+	int matches_sum_cfh_rgb_fpfh_new_[20] = {0};
+	int corresponding_regions_sum_cfh_rgb_fpfh_new_[20] = {0};
 
 	// HSV
 	int correct_matches_sum_cfh_hsv_fpfh_rate_[20] = { 0 };
@@ -112,6 +116,10 @@ public:
 	int correct_matches_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
 	int matches_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
 	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_L2_[20] = {0};
+	
+	int correct_matches_sum_fpfh_cfh_rgb_fpfh_new_[20] = {0};
+	int matches_sum_fpfh_cfh_rgb_fpfh_new_[20] = {0};
+	int corresponding_regions_sum_fpfh_cfh_rgb_fpfh_new_[20] = {0};
 
 	//HSV(S+C)
 	int correct_matches_sum_fpfh_cfh_hsv_fpfh_rate_[20] = { 0 };

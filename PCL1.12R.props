@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\Program Files\PCL 1.12.1\include\pcl-1.12;C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78;C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3;C:\Program Files\PCL 1.12.1\3rdParty\FLANN\include;C:\Program Files\PCL 1.12.1\3rdParty\Qhull\include;C:\Program Files\OpenNI2\Include;C:\Program Files\PCL 1.12.1\3rdParty\VTK\include;C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\weiru\source\repos\DescriptorMatchingExperiment\Experiment_1\include;C:\Program Files\PCL 1.12.1\include\pcl-1.12;C:\Program Files\PCL 1.12.1\3rdParty\Boost\include\boost-1_78;C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3;C:\Program Files\PCL 1.12.1\3rdParty\FLANN\include;C:\Program Files\PCL 1.12.1\3rdParty\Qhull\include;C:\Program Files\OpenNI2\Include;C:\Program Files\PCL 1.12.1\3rdParty\VTK\include;C:\Program Files\PCL 1.12.1\3rdParty\VTK\include\vtk-9.1;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\PCL 1.12.1\lib;C:\Program Files\PCL 1.12.1\3rdParty\Boost\lib;C:\Program Files\PCL 1.12.1\3rdParty\FLANN\lib;C:\Program Files\OpenNI2\Lib;C:\Program Files\PCL 1.12.1\3rdParty\Qhull\lib;C:\Program Files\PCL 1.12.1\3rdParty\VTK\lib;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>PCL1.12R</_PropertySheetDisplayName>
   </PropertyGroup>

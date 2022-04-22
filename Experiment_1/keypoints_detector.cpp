@@ -50,30 +50,32 @@ void KeypointsDetector::compute(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_mod
 {
 	pcl::Indices index_s;
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_unfiltered_s(new pcl::PointCloud<pcl::PointXYZRGB>);
-
 	computeRandomSample(cloud_model, keypoints_m, keypoints_num);
-	pcl::transformPointCloud(*keypoints_m, *keypoints_unfiltered_s, ground_truth);
-	//筛除在场景中近邻点太少的关键点，保证关键点的真实有效，场景关键点的近邻点数至少为模型的一半
-	pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree_m;
-	kdtree_m.setInputCloud(cloud_model);
-	pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree_s;
-	kdtree_s.setInputCloud(cloud_scene);
-	//检查近邻点数量
-	for (size_t i = 0; i < keypoints_m->size(); i++)
-	{
-		std::vector<int> pointIdxRadiusSearch_1;
-		std::vector<float> pointRadiusSquaredDistance_1;
-		std::vector<int> pointIdxRadiusSearch_2;
-		std::vector<float> pointRadiusSquaredDistance_2;
-		int num_m = kdtree_m.radiusSearch(keypoints_m->at(i), radius_for_inspection, pointIdxRadiusSearch_1, pointRadiusSquaredDistance_1);
-		int num_s = kdtree_s.radiusSearch(keypoints_unfiltered_s->at(i), radius_for_inspection, pointIdxRadiusSearch_2, pointRadiusSquaredDistance_2);
-		if ((num_s >= (num_m/3))&&(num_s!=0)) //场景关键点周围要有足够近邻点
-		{
-			index_s.push_back(i);
-		}
-	}
-	pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp_s(new pcl::PointCloud<pcl::PointXYZRGB>(*keypoints_unfiltered_s, index_s));
-	pcl::copyPointCloud(*temp_s, *keypoints_s);
+	pcl::transformPointCloud(*keypoints_m, *keypoints_s, ground_truth);
+
+	//computeRandomSample(cloud_model, keypoints_m, keypoints_num);
+	//pcl::transformPointCloud(*keypoints_m, *keypoints_unfiltered_s, ground_truth);
+	////筛除在场景中近邻点太少的关键点，保证关键点的真实有效，场景关键点的近邻点数至少为模型的一半
+	//pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree_m;
+	//kdtree_m.setInputCloud(cloud_model);
+	//pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree_s;
+	//kdtree_s.setInputCloud(cloud_scene);
+	////检查近邻点数量
+	//for (size_t i = 0; i < keypoints_m->size(); i++)
+	//{
+	//	std::vector<int> pointIdxRadiusSearch_1;
+	//	std::vector<float> pointRadiusSquaredDistance_1;
+	//	std::vector<int> pointIdxRadiusSearch_2;
+	//	std::vector<float> pointRadiusSquaredDistance_2;
+	//	int num_m = kdtree_m.radiusSearch(keypoints_m->at(i), radius_for_inspection, pointIdxRadiusSearch_1, pointRadiusSquaredDistance_1);
+	//	int num_s = kdtree_s.radiusSearch(keypoints_unfiltered_s->at(i), radius_for_inspection, pointIdxRadiusSearch_2, pointRadiusSquaredDistance_2);
+	//	if ((num_s >= (num_m/3))&&(num_s!=0)) //场景关键点周围要有足够近邻点
+	//	{
+	//		index_s.push_back(i);
+	//	}
+	//}
+	//pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp_s(new pcl::PointCloud<pcl::PointXYZRGB>(*keypoints_unfiltered_s, index_s));
+	//pcl::copyPointCloud(*temp_s, *keypoints_s);
 }
 
 void KeypointsDetector::compute_v(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model, pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_scene, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_m, pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints_s, Eigen::Matrix4f ground_truth, double radius_for_inspection, double leaf_size)

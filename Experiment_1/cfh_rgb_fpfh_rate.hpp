@@ -112,7 +112,7 @@ pcl::CFH_Estimation_RGB_FPFH_RATE<PointInT, PointNT, PointOutT>::weightPointSPFH
             continue;
 
         // Standard weighting function used
-        weight = 1.0f / dists[idx];
+        weight = 1.0f / sqrt(dists[idx]);
 
         // Weight the SPFH of the query point with the SPFH of its neighbors
         for (Eigen::MatrixXf::Index f1_i = 0; f1_i < nr_bins_f1; ++f1_i)

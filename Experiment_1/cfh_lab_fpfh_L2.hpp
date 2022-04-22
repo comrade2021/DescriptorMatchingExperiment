@@ -9,7 +9,7 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
-inline bool pcl::CFH_Estimation_LAB_FPFH_L2<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
+bool pcl::CFH_Estimation_LAB_FPFH_L2<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
 {
     unsigned char red_1 = cloud[p_idx].r;
     unsigned char green_1 = cloud[p_idx].g;

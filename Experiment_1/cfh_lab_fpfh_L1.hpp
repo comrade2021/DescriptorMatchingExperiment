@@ -11,25 +11,34 @@
 template<typename PointInT, typename PointNT, typename PointOutT>
 inline bool pcl::CFH_Estimation_LAB_FPFH_L1<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
 {
-    unsigned char red_1 = cloud[p_idx].r;
-    unsigned char green_1 = cloud[p_idx].g;
-    unsigned char blue_1 = cloud[p_idx].b;
-    unsigned char red_2 = cloud[q_idx].r;
-    unsigned char green_2 = cloud[q_idx].g;
-    unsigned char blue_2 = cloud[q_idx].b;
+    int red_1 = cloud[p_idx].r;
+    int green_1 = cloud[p_idx].g;
+    int blue_1 = cloud[p_idx].b;
+    int red_2 = cloud[q_idx].r;
+    int green_2 = cloud[q_idx].g;
+    int blue_2 = cloud[q_idx].b;
 
-    float L1, a1, b1;
-    float L2, a2, b2;
+    colorutil::RGB rgb_color_1(red_1 / 255.0, green_1 / 255.0, blue_1 / 255.0);
+    colorutil::RGB rgb_color_2(red_2 / 255.0, green_2 / 255.0, blue_2 / 255.0);
 
-    RGB2CIELAB(red_1, green_1, blue_1, L1, a1, b1);
-    RGB2CIELAB(red_2, green_2, blue_2, L2, a2, b2);
+    colorutil::XYZ xyz_color_1 = colorutil::convert_RGB_to_XYZ(rgb_color_1);
+    colorutil::XYZ xyz_color_2 = colorutil::convert_RGB_to_XYZ(rgb_color_2);
+    colorutil::Lab lab_color_1 = colorutil::convert_XYZ_to_Lab(xyz_color_1);
+    colorutil::Lab lab_color_2 = colorutil::convert_XYZ_to_Lab(xyz_color_2);
+
+    float L1 = lab_color_1[0];
+    float a1 = lab_color_1[1];
+    float b1 = lab_color_1[2];
+    float L2 = lab_color_2[0];
+    float a2 = lab_color_2[1];
+    float b2 = lab_color_2[2];
 
     L1 /= 100.0f;
-    a1 /= 120.0f;
-    b1 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+    a1 /= 128.0f;
+    b1 /= 128.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
     L2 /= 100.0f;
-    a2 /= 120.0f;
-    b2 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+    a2 /= 128.0f;
+    b2 /= 128.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
 
     //0-1
     a1 = (a1 + 1.0) / 2.0;
@@ -84,6 +93,83 @@ inline bool pcl::CFH_Estimation_LAB_FPFH_L1<PointInT, PointNT, PointOutT>::compu
     f1 = mdist;
     return (true);
 }
+////////////////////////////////////////////////////////////////////////////////////////////////
+//template<typename PointInT, typename PointNT, typename PointOutT>
+//inline bool pcl::CFH_Estimation_LAB_FPFH_L1<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
+//{
+//    unsigned char red_1 = cloud[p_idx].r;
+//    unsigned char green_1 = cloud[p_idx].g;
+//    unsigned char blue_1 = cloud[p_idx].b;
+//    unsigned char red_2 = cloud[q_idx].r;
+//    unsigned char green_2 = cloud[q_idx].g;
+//    unsigned char blue_2 = cloud[q_idx].b;
+//
+//    float L1, a1, b1;
+//    float L2, a2, b2;
+//
+//    RGB2CIELAB(red_1, green_1, blue_1, L1, a1, b1);
+//    RGB2CIELAB(red_2, green_2, blue_2, L2, a2, b2);
+//
+//    L1 /= 100.0f;
+//    a1 /= 120.0f;
+//    b1 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+//    L2 /= 100.0f;
+//    a2 /= 120.0f;
+//    b2 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+//
+//    //0-1
+//    a1 = (a1 + 1.0) / 2.0;
+//    b1 = (b1 + 1.0) / 2.0;
+//    a2 = (a2 + 1.0) / 2.0;
+//    b2 = (b2 + 1.0) / 2.0;
+//
+//    //处理异常值
+//    Eigen::Vector4f lab1(L1, a1, b1, 0),lab2(L2, a2, b2, 0);
+//    if ((lab1[0] < 0)) lab1[0] = 0;
+//    if ((lab1[0] > 1)) lab1[0] = 1;
+//    if ((lab1[1] < 0)) lab1[1] = 0;
+//    if ((lab1[1] > 1)) lab1[1] = 1;
+//    if ((lab1[2] < 0)) lab1[2] = 0;
+//    if ((lab1[2] > 1)) lab1[2] = 1;
+//
+//    if ((lab2[0] < 0)) lab2[0] = 0;
+//    if ((lab2[0] > 1)) lab2[0] = 1;
+//    if ((lab2[1] < 0)) lab2[1] = 0;
+//    if ((lab2[1] > 1)) lab2[1] = 1;
+//    if ((lab2[2] < 0)) lab2[2] = 0;
+//    if ((lab2[2] > 1)) lab2[2] = 1;
+//
+//    //范围在0-100
+//    lab1[0] *= 100;
+//    lab1[1] *= 100;
+//    lab1[2] *= 100;
+//    lab2[0] *= 100;
+//    lab2[1] *= 100;
+//    lab2[2] *= 100;
+//
+//    //计算L1距离
+//    float r11 = lab1[0];
+//    float g11 = lab1[1];
+//    float b11 = lab1[2];
+//    float r22 = lab2[0];
+//    float g22 = lab2[1];
+//    float b22 = lab2[2];
+//
+//    float L11 = abs(r11 - r22) + abs(g11 - g22) + abs(b11 - b22);
+//
+//    float mdist = L11 / static_cast<float>(100 + 100 + 100);//范围：0 - 1
+//    if (mdist < 0)
+//    {
+//        f1 = 0;
+//    }
+//    if (mdist > 1.0)
+//    {
+//        f1 = 1.0;
+//    }
+//
+//    f1 = mdist;
+//    return (true);
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
@@ -150,7 +236,7 @@ pcl::CFH_Estimation_LAB_FPFH_L1<PointInT, PointNT, PointOutT>::computePointSPFHS
     int nr_bins_f1 = static_cast<int> (hist_f1.cols());
 
     // Factorization constant
-    float hist_incr = 300.0f / static_cast<float>(indices.size() - 1);
+    float hist_incr = 100.0f / static_cast<float>(indices.size() - 1);
 
     // Iterate over all the points in the neighborhood
     for (const auto& index : indices)
@@ -207,7 +293,7 @@ pcl::CFH_Estimation_LAB_FPFH_L1<PointInT, PointNT, PointOutT>::weightPointSPFHSi
     }
 
     if (sum_f1 != 0)
-        sum_f1 = 300.0 / sum_f1;           // histogram values sum up to 300
+        sum_f1 = 100.0 / sum_f1;           // histogram values sum up to 300
 
 
     // Adjust final FPFH values

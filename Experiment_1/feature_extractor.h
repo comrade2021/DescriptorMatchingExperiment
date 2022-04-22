@@ -76,6 +76,14 @@ public:
 		double radius,
 		pcl::PointCloud<pcl::FPFHSignature33>::Ptr feature);
 	
+	/// 计算色彩直方图（RGB fpfh结构 new）
+	void computeCFH_RGB_FPFH_NEW(
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
+		pcl::PointCloud<pcl::Normal>::Ptr normal,
+		double radius,
+		pcl::PointCloud<pcl::PFHSignature125>::Ptr feature);
+	
 	/// 计算色彩直方图（RGB fpfh结构 dot）
 	void computeCFH_RGB_FPFH_DOT(
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
@@ -254,6 +262,14 @@ public:
 
 	// 几何（FPFH）与色彩（cfh_lab_fpfh_L2）的拼接特征，共66维，结果存储于pfh125直方图
 	void computeFPFH_CFH_LAB_FPFH_L2(
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
+		pcl::PointCloud<pcl::Normal>::Ptr normal,
+		double radius,
+		pcl::PointCloud<pcl::PFHSignature125>::Ptr feature);
+
+	// 几何（FPFH）与色彩（cfh_rgb_fpfh_new）的拼接特征，共66维，结果存储于pfh125直方图
+	void computeFPFH_CFH_RGB_FPFH_NEW(
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr keypoints,
 		pcl::PointCloud<pcl::Normal>::Ptr normal,

@@ -93,6 +93,18 @@
     <ClCompile Include="cfh_rgb_fpfh_rate.hpp">
       <Filter>源文件\feature</Filter>
     </ClCompile>
+    <ClCompile Include="test_time.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_texture.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_pcshow.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="test_cie00.cpp">
+      <Filter>源文件\Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="keypoints_detector.h">
@@ -201,6 +213,18 @@
       <Filter>源文件\feature</Filter>
     </ClInclude>
     <ClInclude Include="cfh_lab_fpfh_rate.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_new.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cfh_rgb_fpfh_new.hpp">
+      <Filter>源文件\feature</Filter>
+    </ClInclude>
+    <ClInclude Include="fpfh_sc_time.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="fpfh_sc_time.hpp">
       <Filter>源文件\feature</Filter>
     </ClInclude>
   </ItemGroup>

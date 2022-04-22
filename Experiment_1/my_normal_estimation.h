@@ -25,6 +25,11 @@ public:
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
 		double radius,
 		pcl::PointCloud<pcl::Normal>::Ptr normal);
+	
+	void computeNormal_K(
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+		int radius,
+		pcl::PointCloud<pcl::Normal>::Ptr normal);
 
 private:
 

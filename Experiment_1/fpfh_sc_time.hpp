@@ -1,137 +1,55 @@
-﻿#pragma once
-
-#include "cfh_lab_fpfh_rate.h"
+#pragma once
+#include "fpfh_sc_time.h"
 
 #include <pcl/common/point_tests.h> // for pcl::isFinite
 #include <pcl/features/pfh_tools.h>
-#include <pcl/common/colors.h>
 
 #include <set> // for std::set
 
-#include <color-util/RGB_to_XYZ.hpp>
-#include <color-util/XYZ_to_Lab.hpp>
-#include <color-util/CIEDE2000.hpp>
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-////!!!!!!!!test:先对所有点云进行LAB色彩转换，再进行点对计算(另一处修改在feature_extractor.cpp)
-//template <typename PointInT, typename PointNT, typename PointOutT> bool
-//pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePairFeatures(
-//    const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
-//    int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4)
-//{
-//    /*int red_1 = cloud[p_idx].r;
-//    int green_1 = cloud[p_idx].g;
-//    int blue_1 = cloud[p_idx].b;
-//    int red_2 = cloud[q_idx].r;
-//    int green_2 = cloud[q_idx].g;
-//    int blue_2 = cloud[q_idx].b;
-//
-//    colorutil::RGB rgb_color_1(red_1 / 255.0, green_1 / 255.0, blue_1 / 255.0);
-//    colorutil::RGB rgb_color_2(red_2 / 255.0, green_2 / 255.0, blue_2 / 255.0);
-//
-//    colorutil::XYZ xyz_color_1 = colorutil::convert_RGB_to_XYZ(rgb_color_1);
-//    colorutil::XYZ xyz_color_2 = colorutil::convert_RGB_to_XYZ(rgb_color_2);
-//    colorutil::Lab lab_color_1 = colorutil::convert_XYZ_to_Lab(xyz_color_1);
-//    colorutil::Lab lab_color_2 = colorutil::convert_XYZ_to_Lab(xyz_color_2);
-//
-//    float L1 = lab_color_1[0];
-//    float a1 = lab_color_1[1] + 128;
-//    float b1 = lab_color_1[2] + 128;
-//    float L2 = lab_color_2[0];
-//    float a2 = lab_color_2[1] + 128;
-//    float b2 = lab_color_2[2] + 128;
-//
-//    Eigen::Vector4f lab1(L1, a1, b1, 0),
-//        lab2(L2, a2, b2, 0);*/
-//
-//    int red_1 = cloud[p_idx].r;
-//    int green_1 = cloud[p_idx].g;
-//    int blue_1 = cloud[p_idx].b;
-//    int red_2 = cloud[q_idx].r;
-//    int green_2 = cloud[q_idx].g;
-//    int blue_2 = cloud[q_idx].b;
-//
-//    Eigen::Vector4f lab1(red_1, green_1, blue_1, 0),
-//        lab2(red_2, green_2, blue_2, 0);
-//
-//    computeRGBPairFeatures(lab1, lab2, f1, f2, f3, f4);
-//    return (true);
-//}
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> bool
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePairFeatures(
+pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computePairFeatures(
     const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
     int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4)
 {
-    int red_1 = cloud[p_idx].r;
-    int green_1 = cloud[p_idx].g;
-    int blue_1 = cloud[p_idx].b;
-    int red_2 = cloud[q_idx].r;
-    int green_2 = cloud[q_idx].g;
-    int blue_2 = cloud[q_idx].b;
+    float ti[4]{ 0,0,0,0 };
+    computeTimePairFeatures(cloud[p_idx].getVector4fMap(), normals[p_idx].getNormalVector4fMap(),cloud[q_idx].getVector4fMap(), normals[q_idx].getNormalVector4fMap(),
+        ti[0], ti[1], ti[2], ti[3]);
 
-    colorutil::RGB rgb_color_1(red_1 / 255.0, green_1 / 255.0, blue_1 / 255.0);
-    colorutil::RGB rgb_color_2(red_2 / 255.0, green_2 / 255.0, blue_2 / 255.0);
+    Eigen::Vector4i colors1(cloud[p_idx].r, cloud[p_idx].g, cloud[p_idx].b, 0),
+        colors2(cloud[q_idx].r, cloud[q_idx].g, cloud[q_idx].b, 0);
+    Eigen::Vector4f hsv1;
+    Eigen::Vector4f hsv2;
+    RGBtoHSV(colors1, hsv1);
+    RGBtoHSV(colors2, hsv2);
 
-    colorutil::XYZ xyz_color_1 = colorutil::convert_RGB_to_XYZ(rgb_color_1);
-    colorutil::XYZ xyz_color_2 = colorutil::convert_RGB_to_XYZ(rgb_color_2);
-    colorutil::Lab lab_color_1 = colorutil::convert_XYZ_to_Lab(xyz_color_1);
-    colorutil::Lab lab_color_2 = colorutil::convert_XYZ_to_Lab(xyz_color_2);
+    if ((hsv1[0] < 0)) hsv1[0] = 0;
+    if ((hsv1[0] > 360)) hsv1[0] = 360;
+    if ((hsv1[1] < 0)) hsv1[1] = 0;
+    if ((hsv1[1] > 1)) hsv1[1] = 1;
+    if ((hsv1[2] < 0)) hsv1[2] = 0;
+    if ((hsv1[2] > 1)) hsv1[2] = 1;
 
-    float L1 = lab_color_1[0];
-    float a1 = lab_color_1[1]+128;
-    float b1 = lab_color_1[2]+128;
-    float L2 = lab_color_2[0];
-    float a2 = lab_color_2[1]+128;
-    float b2 = lab_color_2[2]+128;
+    if ((hsv2[0] < 0)) hsv2[0] = 0;
+    if ((hsv2[0] > 360)) hsv2[0] = 360;
+    if ((hsv2[1] < 0)) hsv2[1] = 0;
+    if ((hsv2[1] > 1)) hsv2[1] = 1;
+    if ((hsv2[2] < 0)) hsv2[2] = 0;
+    if ((hsv2[2] > 1)) hsv2[2] = 1;
 
-    Eigen::Vector4f lab1(L1, a1, b1, 0),
-        lab2(L2, a2, b2, 0);
-    
-    computeRGBPairFeatures(lab1, lab2, f1, f2, f3, f4);
+    /*hsv1[0] = (hsv1[0] / 360) * 2 - 1.0;
+    hsv1[1] = 2 * hsv1[1] - 1.0;
+    hsv1[2] = 2 * hsv1[2] - 1.0;
+    hsv2[0] = (hsv2[0] / 360) * 2 - 1.0;
+    hsv2[1] = 2 * hsv2[1] - 1.0;
+    hsv2[2] = 2 * hsv2[2] - 1.0;*/
+
+    computeRGBPairFeatures(hsv1, hsv2, f1, f2, f3, f4);
     return (true);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-// 这部分从pcl中改进来
-//template <typename PointInT, typename PointNT, typename PointOutT> bool
-//pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePairFeatures(
-//    const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
-//    int p_idx, int q_idx, float& f1, float& f2, float& f3, float& f4)
-//{
-//    unsigned char red_1 = cloud[p_idx].r;
-//    unsigned char green_1 = cloud[p_idx].g;
-//    unsigned char blue_1 = cloud[p_idx].b;
-//    unsigned char red_2 = cloud[q_idx].r;
-//    unsigned char green_2 = cloud[q_idx].g;
-//    unsigned char blue_2 = cloud[q_idx].b;
-//
-//    float L1, a1, b1;
-//    float L2, a2, b2;
-//
-//    RGB2CIELAB(red_1, green_1, blue_1, L1, a1, b1);
-//    RGB2CIELAB(red_2, green_2, blue_2, L2, a2, b2);
-//
-//    L1 /= 100.0f;
-//    a1 /= 120.0f;
-//    b1 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
-//    L2 /= 100.0f;
-//    a2 /= 120.0f;
-//    b2 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
-//
-//    //L1 = 2 * L1 - 1.0;
-//    //L2 = 2 * L2 - 1.0; //归一化: -1至+1 (其实不必要)
-//
-//    Eigen::Vector4f lab1(L1, a1, b1, 0),
-//        lab2(L2, a2, b2, 0);
-//    
-//    computeRGBPairFeatures(lab1, lab2, f1, f2, f3, f4);
-//    return (true);
-//}
-
 template<typename PointInT, typename PointNT, typename PointOutT>
-inline bool pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1, float& f2, float& f3, float& f4)
+ bool pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1, float& f2, float& f3, float& f4)
 {
     // everything before was standard 4D-Darboux frame feature pair
     // now, for the experimental color stuff
@@ -149,63 +67,107 @@ inline bool pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::com
     return (true);
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-template<typename PointInT, typename PointNT, typename PointOutT>
-std::array<float, 256>
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::sRGB_LUT = pcl::RGB2sRGB_LUT<float, 8>();
+ template<typename PointInT, typename PointNT, typename PointOutT>
+ bool pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computeTimePairFeatures(const Eigen::Vector4f& p1, const Eigen::Vector4f& n1, const Eigen::Vector4f& p2, const Eigen::Vector4f& n2, float& f1, float& f2, float& f3, float& f4)
+ {
+     Eigen::Vector4f dp2p1 = p2 - p1;
+     dp2p1[3] = 0.0f;
+     f4 = dp2p1.norm();
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-template<typename PointInT, typename PointNT, typename PointOutT>
-std::array<float, 4000>
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::sXYZ_LUT = pcl::XYZ2LAB_LUT<float, 4000>();
+     if (f4 == 0.0f)
+     {
+         PCL_DEBUG("[pcl::computePairFeatures] Euclidean distance between points is 0!\n");
+         f1 = f2 = f3 = f4 = 0.0f;
+         return (false);
+     }
 
-template<typename PointInT, typename PointNT, typename PointOutT>
-inline void pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::RGB2CIELAB(unsigned char R, unsigned char G, unsigned char B, float& L, float& A, float& B2)
+     Eigen::Vector4f n1_copy = n1,
+         n2_copy = n2;
+     n1_copy[3] = n2_copy[3] = 0.0f;
+     float angle1 = n1_copy.dot(dp2p1) / f4;
+
+     // Make sure the same point is selected as 1 and 2 for each pair
+     float angle2 = n2_copy.dot(dp2p1) / f4;
+     if (std::acos(std::fabs(angle1)) > std::acos(std::fabs(angle2)))
+     {
+         // switch p1 and p2
+         n1_copy = n2;
+         n2_copy = n1;
+         n1_copy[3] = n2_copy[3] = 0.0f;
+         dp2p1 *= (-1);
+         f3 = -angle2;
+     }
+     else
+         f3 = angle1;
+
+     // Create a Darboux frame coordinate system u-v-w
+     // u = n1; v = (p_idx - q_idx) x u / || (p_idx - q_idx) x u ||; w = u x v
+     Eigen::Vector4f v = dp2p1.cross3(n1_copy);
+     v[3] = 0.0f;
+     float v_norm = v.norm();
+     if (v_norm == 0.0f)
+     {
+         PCL_DEBUG("[pcl::computePairFeatures] Norm of Delta x U is 0!\n");
+         f1 = f2 = f3 = f4 = 0.0f;
+         return (false);
+     }
+     // Normalize v
+     v /= v_norm;
+
+     Eigen::Vector4f w = n1_copy.cross3(v);
+     // Do not have to normalize w - it is a unit vector by construction
+
+     v[3] = 0.0f;
+     f2 = v.dot(n2_copy);
+     w[3] = 0.0f;
+     // Compute f1 = arctan (w * n2, u * n2) i.e. angle of n2 in the x=u, y=w coordinate system
+     f1 = std::atan2(w.dot(n2_copy), n1_copy.dot(n2_copy)); // @todo optimize this
+
+     return true;
+ }
+
+ template<typename PointInT, typename PointNT, typename PointOutT>
+inline void pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::RGBtoHSV(const Eigen::Vector4i& in, Eigen::Vector4f& out)
 {
-    float fr = sRGB_LUT[R];
-    float fg = sRGB_LUT[G];
-    float fb = sRGB_LUT[B];
+    const unsigned char max = std::max(in[0], std::max(in[1], in[2]));
+    const unsigned char min = std::min(in[0], std::min(in[1], in[2]));
 
-    // Use white = D65
-    const float x = fr * 0.412453f + fg * 0.357580f + fb * 0.180423f;
-    const float y = fr * 0.212671f + fg * 0.715160f + fb * 0.072169f;
-    const float z = fr * 0.019334f + fg * 0.119193f + fb * 0.950227f;
+    out[2] = static_cast <float> (max) / 255.f;//V ��Χ0-1
 
-    float vx = x / 0.95047f;
-    float vy = y;
-    float vz = z / 1.08883f;
+    if (max == 0) // division by zero
+    {
+        out[1] = 0.f;
+        out[0] = 0.f; // h = -1.f;
+        return;
+    }
 
-    vx = sXYZ_LUT[int(vx * 4000)];
-    vy = sXYZ_LUT[int(vy * 4000)];
-    vz = sXYZ_LUT[int(vz * 4000)];
+    const float diff = static_cast <float> (max - min);
+    out[1] = diff / static_cast <float> (max);//S ��Χ0-1
 
-    L = 116.0f * vy - 16.0f;
-    if (L > 100)
-        L = 100.0f;
+    if (min == max) // diff == 0 -> division by zero
+    {
+        out[0] = 0;
+        return;
+    }
 
-    A = 500.0f * (vx - vy);
-    if (A > 120)
-        A = 120.0f;
-    else if (A < -120)
-        A = -120.0f;
+    if (max == in[0]) out[0] = 60.f * (static_cast <float> (in[1] - in[2]) / diff);
+    else if (max == in[1]) out[0] = 60.f * (2.f + static_cast <float> (in[2] - in[0]) / diff);
+    else                  out[0] = 60.f * (4.f + static_cast <float> (in[0] - in[1]) / diff); // max == b
 
-    B2 = 200.0f * (vy - vz);
-    if (B2 > 120)
-        B2 = 120.0f;
-    else if (B2 < -120)
-        B2 = -120.0f;
+    if (out[0] < 0.f) out[0] += 360.f;
 }
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePointSPFHSignature(
+pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computePointSPFHSignature(
     const pcl::PointCloud<PointInT>& cloud, const pcl::PointCloud<PointNT>& normals,
     pcl::index_t p_idx, int row, const pcl::Indices& indices,
     Eigen::MatrixXf& hist_f1, Eigen::MatrixXf& hist_f2, Eigen::MatrixXf& hist_f3)
 {
-    Eigen::Vector4f pfh_tuple;
+    //Eigen::Vector4f pfh_tuple;
+    float pfh_tuple[4] = { 0,0,0,0 };
+
     // Get the number of bins from the histograms size
     // @TODO: use arrays
     int nr_bins_f1 = static_cast<int> (hist_f1.cols());
@@ -246,7 +208,7 @@ pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computePointSPF
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::weightPointSPFHSignature(
+pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::weightPointSPFHSignature(
     const Eigen::MatrixXf& hist_f1, const Eigen::MatrixXf& hist_f2, const Eigen::MatrixXf& hist_f3,
     const pcl::Indices& indices, const std::vector<float>& dists, Eigen::VectorXf& fpfh_histogram)
 {
@@ -272,7 +234,7 @@ pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::weightPointSPFH
             continue;
 
         // Standard weighting function used
-        weight = 1.0f / sqrt(dists[idx]);
+        weight = 1.0f / dists[idx];
 
         // Weight the SPFH of the query point with the SPFH of its neighbors
         for (Eigen::MatrixXf::Index f1_i = 0; f1_i < nr_bins_f1; ++f1_i)
@@ -318,7 +280,7 @@ pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::weightPointSPFH
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeSPFHSignatures(std::vector<int>& spfh_hist_lookup,
+pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computeSPFHSignatures(std::vector<int>& spfh_hist_lookup,
     Eigen::MatrixXf& hist_f1, Eigen::MatrixXf& hist_f2, Eigen::MatrixXf& hist_f3)
 {
     // Allocate enough space to hold the NN search results
@@ -374,7 +336,7 @@ pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeSPFHSign
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <typename PointInT, typename PointNT, typename PointOutT> void
-pcl::CFH_Estimation_LAB_FPFH_RATE<PointInT, PointNT, PointOutT>::computeFeature(PointCloudOut& output)
+pcl::FPFH_SC_TIME_Estimation<PointInT, PointNT, PointOutT>::computeFeature(PointCloudOut& output)
 {
     // Allocate enough space to hold the NN search results
     // \note This resize is irrelevant for a radiusSearch ().

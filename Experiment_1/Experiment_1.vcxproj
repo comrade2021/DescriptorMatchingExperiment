@@ -159,9 +159,13 @@
     <ClCompile Include="matrix_transform.cpp" />
     <ClCompile Include="my_normal_estimation.cpp" />
     <ClCompile Include="test.cpp" />
+    <ClCompile Include="test_cie00.cpp" />
+    <ClCompile Include="test_pcshow.cpp" />
     <ClCompile Include="test_fpfh_omp.cpp" />
     <ClCompile Include="test_histogram_kdtree.cpp" />
     <ClCompile Include="test_new_point.cpp" />
+    <ClCompile Include="test_texture.cpp" />
+    <ClCompile Include="test_time.cpp" />
     <ClCompile Include="test_transform.cpp" />
     <ClCompile Include="toolbox.cpp" />
     <ClCompile Include="validator.cpp" />
@@ -189,6 +193,8 @@
     <ClInclude Include="cfh_rgb_fpfh_L1.hpp" />
     <ClInclude Include="cfh_rgb_fpfh_L2.h" />
     <ClInclude Include="cfh_rgb_fpfh_L2.hpp" />
+    <ClInclude Include="cfh_rgb_fpfh_new.h" />
+    <ClInclude Include="cfh_rgb_fpfh_new.hpp" />
     <ClInclude Include="cfh_rgb_pfh_dot.h" />
     <ClInclude Include="cfh_rgb_fpfh_dot.h" />
     <ClInclude Include="cfh_rgb_fpfh_dot.hpp" />
@@ -198,6 +204,8 @@
     <ClInclude Include="feature_extractor.h" />
     <ClInclude Include="feature_match.h" />
     <ClInclude Include="file_reader.h" />
+    <ClInclude Include="fpfh_sc_time.h" />
+    <ClInclude Include="fpfh_sc_time.hpp" />
     <ClInclude Include="keypoints_detector.h" />
     <ClInclude Include="my_normal_estimation.h" />
     <ClInclude Include="my_point_types.h" />

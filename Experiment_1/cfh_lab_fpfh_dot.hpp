@@ -1,5 +1,6 @@
 ﻿#pragma once
-
+//!!!!!!!!!!!!!!!!!!!注意：本方法已经改为华南理工论文的LAB+CIE2000+33维度的方式，但还没修改类名称。
+//! 直方图总和100，共33维度
 #include "cfh_lab_fpfh_dot.h"
 
 #include <pcl/common/point_tests.h> // for pcl::isFinite
@@ -8,66 +9,111 @@
 
 #include <set> // for std::set
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+#include <color-util/RGB_to_XYZ.hpp>
+#include <color-util/XYZ_to_Lab.hpp>
+#include <color-util/CIEDE2000.hpp>
+#include <color-util/CIE76.hpp>
+
+////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
 inline bool pcl::CFH_Estimation_LAB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
 {
-    unsigned char red_1 = cloud[p_idx].r;
-    unsigned char green_1 = cloud[p_idx].g;
-    unsigned char blue_1 = cloud[p_idx].b;
-    unsigned char red_2 = cloud[q_idx].r;
-    unsigned char green_2 = cloud[q_idx].g;
-    unsigned char blue_2 = cloud[q_idx].b;
+    int red_1 = cloud[p_idx].r;
+    int green_1 = cloud[p_idx].g;
+    int blue_1 = cloud[p_idx].b;
+    int red_2 = cloud[q_idx].r;
+    int green_2 = cloud[q_idx].g;
+    int blue_2 = cloud[q_idx].b;
 
-    float L1, a1, b1;
-    float L2, a2, b2;
+    colorutil::RGB rgb_color_1(red_1 / 255.0, green_1 / 255.0, blue_1 / 255.0);
+    colorutil::RGB rgb_color_2(red_2 / 255.0, green_2 / 255.0, blue_2 / 255.0);
 
-    RGB2CIELAB(red_1, green_1, blue_1, L1, a1, b1);
-    RGB2CIELAB(red_2, green_2, blue_2, L2, a2, b2);
+    colorutil::XYZ xyz_color_1 = colorutil::convert_RGB_to_XYZ(rgb_color_1);
+    colorutil::XYZ xyz_color_2 = colorutil::convert_RGB_to_XYZ(rgb_color_2);
+    colorutil::Lab lab_color_1 = colorutil::convert_XYZ_to_Lab(xyz_color_1);
+    colorutil::Lab lab_color_2 = colorutil::convert_XYZ_to_Lab(xyz_color_2);
 
-    L1 /= 100.0f;
-    a1 /= 120.0f;
-    b1 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
-    L2 /= 100.0f;
-    a2 /= 120.0f;
-    b2 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+    double difference = colorutil::calculate_CIEDE2000(lab_color_1, lab_color_2);
 
-    L1 = 2 * L1 - 1.0;
-    L2 = 2 * L2 - 1.0; //(-1<L<1)
+   /* if (difference > 100 || difference < 0) 
+    {
+        PCL_WARN("difference >100 OR <0");
+        std::cout << "waining: difference=" << difference << std::endl;
+    }*/
+    if (difference>100)
+    {
+        difference = 100;
+    }
+    if (difference < 0)
+    {
+        difference = 0;
+    }
 
-    Eigen::Vector4f lab1(L1, a1, b1, 0),
-        lab2(L2, a2, b2, 0);
+    f1 = difference / 100;
+    f1 = f1 * 2 - 1.0;
 
-    if ((lab1[0] < -1)) lab1[0] = -1;
-    if ((lab1[0] > 1)) lab1[0] = 1;
-    if ((lab1[1] < -1)) lab1[1] = -1;
-    if ((lab1[1] > 1)) lab1[1] = 1;
-    if ((lab1[2] < -1)) lab1[2] = -1;
-    if ((lab1[2] > 1)) lab1[2] = 1;
-
-    if ((lab2[0] < -1)) lab2[0] = -1;
-    if ((lab2[0] > 1)) lab2[0] = 1;
-    if ((lab2[1] < -1)) lab2[1] = -1;
-    if ((lab2[1] > 1)) lab2[1] = 1;
-    if ((lab2[2] < -1)) lab2[2] = -1;
-    if ((lab2[2] > 1)) lab2[2] = 1;
-
-    //Eigen::Vector4f colors1(r1, g1, b1, 0), colors2(r2, g2, b2, 0);
-    lab1.normalize();
-    lab2.normalize();
-
-    computeRGBPairFeatures(lab1, lab2, f1);
     return (true);
 }
+
+//template<typename PointInT, typename PointNT, typename PointOutT>
+//inline bool pcl::CFH_Estimation_LAB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePairFeatures(const pcl::PointCloud<PointInT>& cloud, int p_idx, int q_idx, float& f1)
+//{
+//    unsigned char red_1 = cloud[p_idx].r;
+//    unsigned char green_1 = cloud[p_idx].g;
+//    unsigned char blue_1 = cloud[p_idx].b;
+//    unsigned char red_2 = cloud[q_idx].r;
+//    unsigned char green_2 = cloud[q_idx].g;
+//    unsigned char blue_2 = cloud[q_idx].b;
+//
+//    float L1, a1, b1;
+//    float L2, a2, b2;
+//
+//    RGB2CIELAB(red_1, green_1, blue_1, L1, a1, b1);
+//    RGB2CIELAB(red_2, green_2, blue_2, L2, a2, b2);
+//
+//    L1 /= 100.0f;
+//    a1 /= 120.0f;
+//    b1 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+//    L2 /= 100.0f;
+//    a2 /= 120.0f;
+//    b2 /= 120.0f;   //normalized LAB components (0<L<1, -1<a<1, -1<b<1)
+//
+//    L1 = 2 * L1 - 1.0;
+//    L2 = 2 * L2 - 1.0; //(-1<L<1)
+//
+//    Eigen::Vector4f lab1(L1, a1, b1, 0),
+//        lab2(L2, a2, b2, 0);
+//
+//    if ((lab1[0] < -1)) lab1[0] = -1;
+//    if ((lab1[0] > 1)) lab1[0] = 1;
+//    if ((lab1[1] < -1)) lab1[1] = -1;
+//    if ((lab1[1] > 1)) lab1[1] = 1;
+//    if ((lab1[2] < -1)) lab1[2] = -1;
+//    if ((lab1[2] > 1)) lab1[2] = 1;
+//
+//    if ((lab2[0] < -1)) lab2[0] = -1;
+//    if ((lab2[0] > 1)) lab2[0] = 1;
+//    if ((lab2[1] < -1)) lab2[1] = -1;
+//    if ((lab2[1] > 1)) lab2[1] = 1;
+//    if ((lab2[2] < -1)) lab2[2] = -1;
+//    if ((lab2[2] > 1)) lab2[2] = 1;
+//
+//    //Eigen::Vector4f colors1(r1, g1, b1, 0), colors2(r2, g2, b2, 0);
+//    lab1.normalize();
+//    lab2.normalize();
+//
+//    computeRGBPairFeatures(lab1, lab2, f1);
+//    return (true);
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template<typename PointInT, typename PointNT, typename PointOutT>
 inline bool pcl::CFH_Estimation_LAB_FPFH_DOT<PointInT, PointNT, PointOutT>::computeRGBPairFeatures(const Eigen::Vector4f& colors1, const Eigen::Vector4f& colors2, float& f1)
 {
-    f1 = colors1.dot(colors2);
+    /*f1 = colors1.dot(colors2);
 
     if (f1 < (-1.0)) f1 = -1;
-    if (f1 > 1.0) f1 = 1;
+    if (f1 > 1.0) f1 = 1;*/
     return (true);
 }
 
@@ -129,7 +175,7 @@ pcl::CFH_Estimation_LAB_FPFH_DOT<PointInT, PointNT, PointOutT>::computePointSPFH
     int nr_bins_f1 = static_cast<int> (hist_f1.cols());
 
     // Factorization constant
-    float hist_incr = 300.0f / static_cast<float>(indices.size() - 1);
+    float hist_incr = 100.0f / static_cast<float>(indices.size() - 1);
 
     // Iterate over all the points in the neighborhood
     for (const auto& index : indices)
@@ -186,7 +232,7 @@ pcl::CFH_Estimation_LAB_FPFH_DOT<PointInT, PointNT, PointOutT>::weightPointSPFHS
     }
 
     if (sum_f1 != 0)
-        sum_f1 = 300.0 / sum_f1;           // histogram values sum up to 300
+        sum_f1 = 100.0 / sum_f1;           // histogram values sum up to 100
 
 
     // Adjust final FPFH values
